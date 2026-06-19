@@ -1,0 +1,254 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String
+  password  String
+  secretKey String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SiteSetting {
+  id              Int     @id @default(1)
+  logo            String?
+  facebook        String?
+  youtube         String?
+  instagram       String?
+  twitter         String?
+  siteNameEn      String?
+  siteNameBn      String?
+  defaultLanguage String  @default("en")
+  searchEnabled   Boolean @default(true)
+  footerTextEn    String?
+  footerTextBn    String?
+  copyrightEn     String?
+  copyrightBn     String?
+  footerPhone     String?
+  footerEmail     String?
+  footerAddressEn String?
+  footerAddressBn String?
+}
+
+model NavItem {
+  id        Int      @id @default(autoincrement())
+  labelEn   String
+  labelBn   String
+  href      String
+  sortOrder Int
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HeroSlide {
+  id            Int      @id @default(autoincrement())
+  titleEn       String
+  titleBn       String
+  descriptionEn String
+  descriptionBn String
+  image         String
+  ctaTextEn     String?
+  ctaTextBn     String?
+  ctaLink       String?
+  sortOrder     Int
+  status        String   @default("active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model HomeIntro {
+  id            Int    @id @default(1)
+  titleEn       String
+  titleBn       String
+  descriptionEn String
+  descriptionBn String
+  lawyerImage   String?
+  degreeImage   String?
+  ctaTextEn     String?
+  ctaTextBn     String?
+  ctaLink       String?
+}
+
+model FeaturedService {
+  id            Int      @id @default(autoincrement())
+  icon          String?
+  titleEn       String
+  titleBn       String
+  descriptionEn String
+  descriptionBn String
+  linkToService String?
+  sortOrder     Int
+  status        String   @default("active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model SuccessStat {
+  id      Int    @id @default(autoincrement())
+  number  Int
+  titleEn String
+  titleBn String
+  status  String @default("active")
+}
+
+model Activity {
+  id        Int      @id @default(autoincrement())
+  image     String
+  titleEn   String
+  titleBn   String
+  captionEn String?
+  captionBn String?
+  status    String   @default("active")
+}
+
+model Testimonial {
+  id         Int      @id @default(autoincrement())
+  clientName String
+  reviewEn   String
+  reviewBn   String
+  rating     Int      @default(5)
+  status     String   @default("active")
+}
+
+model ServicePage {
+  id        Int      @id @default(autoincrement())
+  titleEn   String
+  titleBn   String
+  contentEn String
+  contentBn String
+  icon      String?
+  sortOrder Int
+  status    String   @default("active")
+}
+
+model AppointmentSetting {
+  id               Int    @id @default(1)
+  bannerTitleEn    String
+  bannerTitleBn    String
+  officeHoursEn    String
+  officeHoursBn    String
+  mapImage         String?
+  contactPhone     String?
+  contactEmail     String?
+}
+
+model ContactSetting {
+  id            Int    @id @default(1)
+  bannerTitleEn String
+  bannerTitleBn String
+  officeHoursEn String
+  officeHoursBn String
+  mapImage      String?
+  phone         String?
+  email         String?
+  addressEn     String?
+  addressBn     String?
+}
+
+model AboutPage {
+  id           Int    @id @default(1)
+  image        String?
+  bioEn        String?
+  bioBn        String?
+  experienceEn String?
+  experienceBn String?
+  educationEn  String?
+  educationBn  String?
+  missionEn    String?
+  missionBn    String?
+  valuesEn     String?
+  valuesBn     String?
+}
+
+model AppointmentMessage {
+  id            Int      @id @default(autoincrement())
+  name          String
+  phone         String
+  email         String?
+  serviceType   String?
+  preferredDate DateTime?
+  message       String?
+  status        String   @default("unread")
+  createdAt     DateTime @default(now())
+}
+
+model ContactMessage {
+  id        Int      @id @default(autoincrement())
+  name      String
+  phone     String
+  email     String?
+  message   String?
+  status    String   @default("unread")
+  createdAt DateTime @default(now())
+}
+
+model Archive {
+  id           Int      @id @default(autoincrement())
+  tableName    String
+  recordId     Int
+  data         Json
+  autoDeleteAt DateTime
+  createdAt    DateTime @default(now())
+
+  @@index([autoDeleteAt])
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  adminId   String
+  action    String
+  details   String?
+  ip        String?
+  createdAt DateTime @default(now())
+}
+
+enum CourtType {
+  JUDGE_COURT
+  HIGH_COURT
+  SUPREME_COURT
+}
+
+enum OnBehalf {
+  COMPLAINANT
+  ACCUSED
+}
+
+model Case {
+  id           Int      @id @default(autoincrement())
+  serial       Int?
+  clientName   String
+  caseNo       String
+  court        CourtType
+  caseType     String
+  onBehalf     OnBehalf
+  contactNo    String
+  email        String?
+  caseFileLink String?
+  previousDate DateTime?
+  nextDate     DateTime?
+  steps        String?
+  status       String   @default("active")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  history      CaseHistory[]
+}
+
+model CaseHistory {
+  id        Int      @id @default(autoincrement())
+  caseId    Int
+  case      Case     @relation(fields: [caseId], references: [id])
+  date      DateTime @default(now())
+  action    String
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+}

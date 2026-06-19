@@ -1,0 +1,132 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 33% 98%;
+    --foreground: 220 40% 13%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 40% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 40% 13%;
+    --primary: 220 55% 18%;
+    --primary-foreground: 43 90% 92%;
+    --secondary: 43 45% 94%;
+    --secondary-foreground: 220 40% 13%;
+    --muted: 220 20% 96%;
+    --muted-foreground: 220 10% 42%;
+    --accent: 43 74% 49%;
+    --accent-foreground: 220 55% 12%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 18% 88%;
+    --input: 220 18% 88%;
+    --ring: 43 74% 49%;
+    --radius: 0.5rem;
+    --navy: 220 55% 18%;
+    --gold: 43 74% 49%;
+  }
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer utilities {
+  .section-heading {
+    @apply font-serif text-3xl font-bold tracking-tight text-navy md:text-4xl;
+  }
+  .section-subheading {
+    @apply mx-auto mt-3 max-w-2xl text-center text-muted-foreground;
+  }
+  .premium-card {
+    @apply rounded-lg border border-border/60 bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md;
+  }
+  .site-shell {
+    @apply min-h-screen px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-5 lg:px-8;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, hsl(var(--gold) / 0.06), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 100%, hsl(var(--navy) / 0.04), transparent),
+      hsl(var(--muted));
+  }
+  .site-wrapper {
+    @apply mx-auto flex min-h-[calc(100vh-1.5rem)] max-w-[1440px] flex-col rounded-xl border border-border/70 bg-background sm:min-h-[calc(100vh-2rem)] md:rounded-2xl;
+    box-shadow:
+      0 0 0 1px hsl(var(--border) / 0.4),
+      0 4px 6px -2px hsl(var(--navy) / 0.04),
+      0 12px 24px -6px hsl(var(--navy) / 0.08),
+      0 24px 48px -12px hsl(var(--navy) / 0.06);
+  }
+  .input-date {
+    @apply cursor-pointer appearance-none;
+  }
+  .hero-slide-progress {
+    animation: hero-slide-progress 4.5s linear forwards;
+  }
+  .hero-slide-progress-paused {
+    animation-play-state: paused;
+  }
+  .welcome-section-card {
+    background:
+      linear-gradient(145deg, hsl(150 28% 97%) 0%, hsl(155 22% 98%) 45%, hsl(43 40% 97%) 100%);
+    box-shadow:
+      0 0 0 1px hsl(150 18% 82% / 0.5),
+      0 4px 16px -4px hsl(var(--navy) / 0.06),
+      0 12px 32px -8px hsl(150 20% 40% / 0.08);
+  }
+}
+
+@keyframes hero-slide-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  body {
+    background: white !important;
+  }
+  .cause-list-print table {
+    font-size: 11px;
+  }
+  .cause-list-print th,
+  .cause-list-print td {
+    padding: 4px 6px !important;
+  }
+}
