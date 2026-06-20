@@ -20,7 +20,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSidebar } from "@/stores/sidebar"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 const sections = [
   {
@@ -54,24 +54,21 @@ const sections = [
   },
 ]
 
-export function Sidebar() {
+function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
-  const { isOpen } = useSidebar()
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     Dashboard: true,
     "Client Site": true,
     "Lawyer / Admin": true,
   })
 
-  if (!isOpen) return null
-
   return (
-    <aside className="hidden w-64 shrink-0 border-r bg-card md:block">
-      <div className="flex h-16 items-center border-b px-4">
+    <>
+      <div className="flex h-16 shrink-0 items-center border-b px-4">
         <Globe className="mr-2 h-5 w-5 text-primary" />
         <span className="font-semibold">Musa Admin</span>
       </div>
-      <nav className="space-y-2 p-4">
+      <nav className="flex-1 space-y-2 overflow-y-auto p-4">
         {sections.map((section) => (
           <div key={section.title}>
             <button
@@ -91,6 +88,7 @@ export function Sidebar() {
                     <li key={item.href}>
                       <Link
                         href={item.href}
+                        onClick={onNavigate}
                         className={cn(
                           "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
                           active ? "bg-primary text-primary-foreground" : "hover:bg-muted"
@@ -107,6 +105,36 @@ export function Sidebar() {
           </div>
         ))}
       </nav>
-    </aside>
+    </>
+  )
+}
+
+export function Sidebar() {
+  const pathname = usePathname()
+  const { isOpen, close } = useSidebar()
+
+  useEffect(() => {
+    close()
+  }, [pathname, close])
+
+  return (
+    <>
+      {isOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/50 md:hidden"
+            onClick={close}
+            aria-hidden
+          />
+          <aside className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r bg-card md:hidden">
+            <SidebarContent onNavigate={close} />
+          </aside>
+        </>
+      )}
+
+      <aside className="hidden w-64 shrink-0 flex-col border-r bg-card md:flex">
+        <SidebarContent />
+      </aside>
+    </>
   )
 }
