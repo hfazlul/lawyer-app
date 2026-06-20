@@ -3,10 +3,23 @@ import Credentials from "next-auth/providers/credentials"
 import { compare } from "bcryptjs"
 import { prisma } from "./prisma"
 import { loginSchema } from "./validations/auth"
+import { useSecureCookies } from "./cookie-security"
 import type { AdminRole } from "@/types"
+
+const secure = useSecureCookies()
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
+  cookies: {
+    sessionToken: {
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: secure,
+      },
+    },
+  },
   providers: [
     Credentials({
       name: "credentials",

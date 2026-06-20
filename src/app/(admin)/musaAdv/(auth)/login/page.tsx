@@ -1,7 +1,6 @@
 ﻿"use client"
 import { signIn } from "next-auth/react"
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,15 +14,26 @@ const schema = z.object({ email: z.string().email(), password: z.string().min(6)
 type FormData = z.infer<typeof schema>
 
 export default function LoginPage() {
-  const router = useRouter()
   const [error, setError] = useState<string|null>(null)
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({ resolver: zodResolver(schema) })
 
   const onSubmit = async (data: FormData) => {
     setError(null)
     const res = await signIn("credentials", { email: data.email, password: data.password, redirect: false })
-    if (res?.error) { setError("Invalid email or password") }
-    else { router.push("/musaAdv/dashboard") }
+    if (res?.error) {
+      setError("Invalid email or password")
+      return
+    }
+    // Full page navigation so the session cookie is sent on the first dashboard
+    // request. Client-side router.push can race ahead of cookie persistence on
+    // mobile Safari, causing middleware to bounce back to login.
+    const params = new URLSearchParams(window.location.search)
+    const callbackUrl = params.get("callbackUrl")
+    const destination =
+      callbackUrl?.startsWith("/musaAdv") && !callbackUrl.startsWith("//")
+        ? callbackUrl
+        : "/musaAdv/dashboard"
+    window.location.assign(destination)
   }
 
   return (
