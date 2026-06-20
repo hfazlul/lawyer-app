@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
 import { deleteBackup } from "@/actions/admin/backup-actions"
+import { adminPath } from "@/lib/constants"
 import { getAdminSession } from "@/lib/session"
 import { verifyCsrfToken } from "@/lib/csrf"
 
@@ -22,7 +23,7 @@ export async function DELETE(req: NextRequest) {
 
   try {
     await deleteBackup(csrf!, file)
-    revalidatePath("/musaAdv/system/backup")
+    revalidatePath(adminPath("system/backup"))
     return NextResponse.json({ success: true })
   } catch (error) {
     const message = error instanceof Error ? error.message : "Delete failed"

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import { adminPath } from "@/lib/constants"
 
 export default function AdminError({
   error,
@@ -23,7 +24,7 @@ export default function AdminError({
       <div className="flex gap-2">
         <Button onClick={reset}>Try again</Button>
         <Button variant="outline" asChild>
-          <a href="/musaAdv/dashboard">Go to Dashboard</a>
+          <a href={adminPath("dashboard")}>Go to Dashboard</a>
         </Button>
       </div>
     </div>

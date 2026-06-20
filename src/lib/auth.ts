@@ -5,6 +5,7 @@ import { prisma } from "./prisma"
 import { loginSchema } from "./validations/auth"
 import { useSecureCookies } from "./cookie-security"
 import type { AdminRole } from "@/types"
+import { adminPath } from "@/lib/constants"
 
 const secure = useSecureCookies()
 
@@ -45,7 +46,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 30 },
-  pages: { signIn: "/musaAdv/login" },
+  pages: { signIn: adminPath("login") },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {

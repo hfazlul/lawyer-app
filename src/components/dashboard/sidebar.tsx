@@ -19,37 +19,38 @@ import {
   ChevronDown,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { adminPath } from "@/lib/constants"
 import { useSidebar } from "@/stores/sidebar"
 import { useEffect, useState } from "react"
 
 const sections = [
   {
     title: "Dashboard",
-    items: [{ href: "/musaAdv/dashboard", label: "Home", icon: LayoutDashboard }],
+    items: [{ href: adminPath("dashboard"), label: "Home", icon: LayoutDashboard }],
   },
   {
     title: "Client Site",
     items: [
-      { href: "/musaAdv/client-site/settings", label: "Site Settings", icon: Globe },
-      { href: "/musaAdv/client-site/navigation", label: "Navigation", icon: ListChecks },
-      { href: "/musaAdv/client-site/home", label: "Home", icon: Home },
-      { href: "/musaAdv/client-site/services", label: "Services", icon: Briefcase },
-      { href: "/musaAdv/client-site/appointment", label: "Appointment", icon: Calendar },
-      { href: "/musaAdv/client-site/about", label: "About", icon: User },
-      { href: "/musaAdv/client-site/contact", label: "Contact", icon: Phone },
-      { href: "/musaAdv/client-site/archive", label: "Archive", icon: Database },
+      { href: adminPath("client-site/settings"), label: "Site Settings", icon: Globe },
+      { href: adminPath("client-site/navigation"), label: "Navigation", icon: ListChecks },
+      { href: adminPath("client-site/home"), label: "Home", icon: Home },
+      { href: adminPath("client-site/services"), label: "Services", icon: Briefcase },
+      { href: adminPath("client-site/appointment"), label: "Appointment", icon: Calendar },
+      { href: adminPath("client-site/about"), label: "About", icon: User },
+      { href: adminPath("client-site/contact"), label: "Contact", icon: Phone },
+      { href: adminPath("client-site/archive"), label: "Archive", icon: Database },
     ],
   },
   {
     title: "Lawyer / Admin",
     items: [
-      { href: "/musaAdv/lawyer", label: "Overview", icon: Scale },
-      { href: "/musaAdv/lawyer/judge-court", label: "Judge Court", icon: Gavel },
-      { href: "/musaAdv/lawyer/high-court", label: "High Court", icon: Building2 },
-      { href: "/musaAdv/lawyer/supreme-court", label: "Supreme Court", icon: Landmark },
-      { href: "/musaAdv/lawyer/cause-list", label: "Cause List", icon: ListChecks },
-      { href: "/musaAdv/lawyer/clients", label: "All Clients", icon: Users },
-      { href: "/musaAdv/system/backup", label: "Backup & Restore", icon: Database },
+      { href: adminPath("lawyer"), label: "Overview", icon: Scale },
+      { href: adminPath("lawyer/judge-court"), label: "Judge Court", icon: Gavel },
+      { href: adminPath("lawyer/high-court"), label: "High Court", icon: Building2 },
+      { href: adminPath("lawyer/supreme-court"), label: "Supreme Court", icon: Landmark },
+      { href: adminPath("lawyer/cause-list"), label: "Cause List", icon: ListChecks },
+      { href: adminPath("lawyer/clients"), label: "All Clients", icon: Users },
+      { href: adminPath("system/backup"), label: "Backup & Restore", icon: Database },
     ],
   },
 ]

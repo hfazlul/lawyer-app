@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
+import { adminPath } from "@/lib/constants"
 
 const schema = z.object({
   name: z.string().min(2), email: z.string().email(), phone: z.string().min(10),
@@ -32,7 +33,7 @@ export default function SignupPage() {
       if (!res.ok) throw new Error(result.error || "Signup failed")
       if (!result.secretKey) throw new Error("Signup failed")
       sessionStorage.setItem("admin_recovery_flash", result.secretKey)
-      window.location.replace("/musaAdv/signup-recovery")
+      window.location.replace(adminPath("signup-recovery"))
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Signup failed")
     }

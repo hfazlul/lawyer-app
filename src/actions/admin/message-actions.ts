@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { adminPath } from "@/lib/constants"
 import { requireAdmin } from "@/lib/session"
 import { requireAdminMutation } from "@/lib/admin-mutation"
 
@@ -109,7 +110,7 @@ export async function markMessageAsRead(csrfToken: string, id: number, type: "ap
   } else {
     await prisma.contactMessage.update({ where: { id }, data: { status: "read" } })
   }
-  revalidatePath("/musaAdv/dashboard")
+  revalidatePath(adminPath("dashboard"))
 }
 
 export async function exportMessagesCSV(csrfToken: string): Promise<string> {

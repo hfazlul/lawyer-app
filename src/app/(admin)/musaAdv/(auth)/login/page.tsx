@@ -9,6 +9,7 @@ import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
+import { ADMIN_BASE, adminPath } from "@/lib/constants"
 
 const schema = z.object({ email: z.string().email(), password: z.string().min(6) })
 type FormData = z.infer<typeof schema>
@@ -30,9 +31,9 @@ export default function LoginPage() {
     const params = new URLSearchParams(window.location.search)
     const callbackUrl = params.get("callbackUrl")
     const destination =
-      callbackUrl?.startsWith("/musaAdv") && !callbackUrl.startsWith("//")
+      callbackUrl?.startsWith(ADMIN_BASE) && !callbackUrl.startsWith("//")
         ? callbackUrl
-        : "/musaAdv/dashboard"
+        : adminPath("dashboard")
     window.location.assign(destination)
   }
 
@@ -48,7 +49,7 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="flex flex-col gap-2">
             <Button type="submit" className="w-full" disabled={isSubmitting}>{isSubmitting?"Signing in...":"Sign In"}</Button>
-            <Link href="/musaAdv/forgot-password" className="text-sm text-muted-foreground hover:text-primary">Forgot password?</Link>
+            <Link href={adminPath("forgot-password")} className="text-sm text-muted-foreground hover:text-primary">Forgot password?</Link>
           </CardFooter>
         </form>
       </Card>

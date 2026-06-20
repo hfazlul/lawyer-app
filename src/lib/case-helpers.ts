@@ -1,12 +1,13 @@
 import type { CourtType } from "@prisma/client"
+import { adminPath } from "@/lib/constants"
 
 export const CASE_REVALIDATE_PATHS = [
-  "/musaAdv/lawyer/clients",
-  "/musaAdv/lawyer/judge-court",
-  "/musaAdv/lawyer/high-court",
-  "/musaAdv/lawyer/supreme-court",
-  "/musaAdv/lawyer/cause-list",
-  "/musaAdv/dashboard",
+  adminPath("lawyer/clients"),
+  adminPath("lawyer/judge-court"),
+  adminPath("lawyer/high-court"),
+  adminPath("lawyer/supreme-court"),
+  adminPath("lawyer/cause-list"),
+  adminPath("dashboard"),
 ] as const
 
 export function formatCourtName(court: CourtType | string): string {

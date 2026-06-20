@@ -1,3 +1,5 @@
+import { ADMIN_BASE } from "@/lib/constants"
+
 export interface BreadcrumbItem {
   label: string
   href?: string
@@ -25,13 +27,13 @@ const ROUTE_LABELS: Record<string, string> = {
 }
 
 export function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
-  if (!pathname.startsWith("/musaAdv")) return []
+  if (!pathname.startsWith(ADMIN_BASE)) return []
 
-  const segments = pathname.replace(/^\/musaAdv\/?/, "").split("/").filter(Boolean)
+  const segments = pathname.replace(new RegExp(`^${ADMIN_BASE}/?`), "").split("/").filter(Boolean)
   if (segments.length === 0) return [{ label: "Dashboard" }]
 
   const crumbs: BreadcrumbItem[] = []
-  let path = "/musaAdv"
+  let path = ADMIN_BASE
 
   for (let i = 0; i < segments.length; i++) {
     path += `/${segments[i]}`

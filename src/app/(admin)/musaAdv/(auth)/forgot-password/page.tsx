@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { resetPassword } from "./actions"
+import { adminPath } from "@/lib/constants"
 
 const schema = z.object({
   secretKey: z.string().min(1), newEmail: z.string().email().optional().or(z.literal("")),
@@ -35,7 +36,7 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-sm"><CardHeader><CardTitle className="text-center">Password Reset</CardTitle></CardHeader>
         <CardContent><p>Credentials updated. You can now log in.</p></CardContent>
-        <CardFooter><Button onClick={()=>router.push("/musaAdv/login")} className="w-full">Go to Login</Button></CardFooter>
+        <CardFooter><Button onClick={()=>router.push(adminPath("login"))} className="w-full">Go to Login</Button></CardFooter>
       </Card>
     </div>
   )

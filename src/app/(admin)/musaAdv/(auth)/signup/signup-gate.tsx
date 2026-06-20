@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { getLiveAdminCount } from "@/lib/admin-auth-redirect"
+import { adminPath } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -21,7 +22,7 @@ export default async function SignupGate({ children }: { children: React.ReactNo
           </CardContent>
           <CardFooter>
             <Button asChild className="w-full">
-              <Link href="/musaAdv/login">Go to Login</Link>
+              <Link href={adminPath("login")}>Go to Login</Link>
             </Button>
           </CardFooter>
         </Card>

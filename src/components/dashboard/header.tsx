@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { ChevronRight, LogOut, Menu } from "lucide-react"
 import { useSidebar } from "@/stores/sidebar"
 import { getBreadcrumbs } from "@/lib/dashboard-nav"
+import { adminPath } from "@/lib/constants"
 
 export function Header() {
   const { data: session } = useSession()
@@ -23,7 +24,7 @@ export function Header() {
         <nav aria-label="Breadcrumb" className="hidden min-w-0 sm:block">
           <ol className="flex items-center gap-1 text-sm">
             <li>
-              <Link href="/musaAdv/dashboard" className="text-muted-foreground hover:text-foreground">
+              <Link href={adminPath("dashboard")} className="text-muted-foreground hover:text-foreground">
                 Admin
               </Link>
             </li>
@@ -48,7 +49,7 @@ export function Header() {
           <p className="text-sm font-medium">{session?.user?.name ?? "Admin"}</p>
           <p className="text-xs text-muted-foreground">{session?.user?.email}</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: "/musaAdv/login" })}>
+        <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: adminPath("login") })}>
           <LogOut className="mr-2 h-4 w-4" />
           <span className="hidden sm:inline">Logout</span>
         </Button>

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { adminPath } from "@/lib/constants"
 
 const STORAGE_KEY = "admin_recovery_flash"
 
@@ -14,7 +15,7 @@ export default function SignupRecoveryPage() {
     const secret = sessionStorage.getItem(STORAGE_KEY)
     sessionStorage.removeItem(STORAGE_KEY)
     if (!secret) {
-      router.replace("/musaAdv/login")
+      router.replace(adminPath("login"))
       return
     }
     setSecretKey(secret)
@@ -41,7 +42,7 @@ export default function SignupRecoveryPage() {
           <p className="break-all rounded bg-muted p-3 font-mono text-sm">{secretKey}</p>
         </CardContent>
         <CardFooter>
-          <Button onClick={() => router.push("/musaAdv/login")} className="w-full">
+          <Button onClick={() => router.push(adminPath("login"))} className="w-full">
             Go to Login
           </Button>
         </CardFooter>
