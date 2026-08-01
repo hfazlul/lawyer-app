@@ -1,15 +1,50 @@
-﻿"use server"
-import { prisma } from "@/lib/prisma"
+﻿import { prisma } from "@/lib/prisma"
 import { compare, hash } from "bcryptjs"
+import { Prisma } from "@prisma/client"
+import { normalizeAdminEmail } from "@/lib/auth-helpers"
 
-export async function resetPassword(data:{secretKey:string,newEmail?:string,newPassword?:string}) {
+export type ResetPasswordResult =
+  | { success: true }
+  | { success: false; error: string }
+
+export async function resetPassword(data: {
+  secretKey: string
+  newEmail?: string
+  newPassword?: string
+}): Promise<ResetPasswordResult> {
+  const secretKey = data.secretKey.trim()
+  const newEmail = data.newEmail?.trim() || undefined
+  const newPassword = data.newPassword?.trim() || undefined
+
+  if (!secretKey) {
+    return { success: false, error: "Recovery code is required" }
+  }
+  if (!newEmail && !newPassword) {
+    return { success: false, error: "Provide a new email or password" }
+  }
+
   const admin = await prisma.admin.findFirst()
-  if (!admin || !admin.secretKey) throw new Error("No admin found")
-  const isValid = await compare(data.secretKey, admin.secretKey)
-  if (!isValid) throw new Error("Invalid recovery code")
-  const updateData:any = {}
-  if (data.newEmail) updateData.email = data.newEmail
-  if (data.newPassword) updateData.password = await hash(data.newPassword,12)
-  await prisma.admin.update({where:{id:admin.id},data:updateData})
-  return {success:true}
+  if (!admin?.secretKey) {
+    return { success: false, error: "No admin account found on this site" }
+  }
+
+  const isValid = await compare(secretKey, admin.secretKey)
+  if (!isValid) {
+    return { success: false, error: "Invalid recovery code" }
+  }
+
+  const updateData: { email?: string; password?: string } = {}
+  if (newEmail) updateData.email = normalizeAdminEmail(newEmail)
+  if (newPassword) updateData.password = await hash(newPassword, 12)
+
+  try {
+    await prisma.admin.update({ where: { id: admin.id }, data: updateData })
+    return { success: true }
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return { success: false, error: "That email is already in use" }
+    }
+    console.error("resetPassword failed:", error)
+    return { success: false, error: "Could not update credentials. Try again." }
+  }
 }

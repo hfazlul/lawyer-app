@@ -24,12 +24,18 @@ export default function ForgotPasswordPage() {
   const [success, setSuccess] = useState(false)
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({ resolver: zodResolver(schema) })
 
-  const onSubmit = async (data:FormData) => {
+  const onSubmit = async (data: FormData) => {
     setError(null)
-    try {
-      await resetPassword({ secretKey: data.secretKey, newEmail: data.newEmail || undefined, newPassword: data.newPassword || undefined })
+    const result = await resetPassword({
+      secretKey: data.secretKey,
+      newEmail: data.newEmail || undefined,
+      newPassword: data.newPassword || undefined,
+    })
+    if (result.success) {
       setSuccess(true)
-    } catch (e:any) { setError(e.message) }
+      return
+    }
+    setError(result.error)
   }
 
   if (success) return (

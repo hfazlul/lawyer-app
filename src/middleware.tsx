@@ -1,8 +1,11 @@
-﻿import { auth } from "@/lib/auth"
+﻿import NextAuth from "next-auth"
+import { authConfig } from "@/lib/auth.config"
 import { ADMIN_BASE, ADMIN_INTERNAL_PREFIX, adminPath } from "@/lib/constants"
 import { NextResponse } from "next/server"
 import { rateLimiter } from "@/lib/rate-limiter"
 import type { AdminSessionUser } from "@/types"
+
+const { auth } = NextAuth(authConfig)
 
 export default auth((req) => {
   const sessionUser = req.auth?.user as AdminSessionUser | undefined
@@ -10,6 +13,7 @@ export default auth((req) => {
   const path = req.nextUrl.pathname
 
   if (path.startsWith("/api/auth")) return NextResponse.next()
+  if (path === "/api/admin/login" || path === "/api/admin/signup") return NextResponse.next()
   if (path === "/api/csrf") {
     if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     return NextResponse.next()
@@ -36,7 +40,6 @@ export default auth((req) => {
     req.headers.get("x-real-ip")?.trim() ||
     "anonymous"
 
-  // Only rate-limit mutations — Next.js RSC/prefetch sends many GETs per page load.
   const isMutation = req.method === "POST"
 
   if (path === adminPath("signup")) {
@@ -77,6 +80,8 @@ export const config = {
     "/saifulAdv",
     "/saifulAdv/:path*",
     "/api/auth/:path*",
+    "/api/admin/login",
+    "/api/admin/signup",
     "/api/csrf",
     "/api/backups/:path*",
     "/api/upload",

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { hash } from "bcryptjs"
 import { randomBytes } from "crypto"
 import { z } from "zod"
+import { normalizeAdminEmail } from "@/lib/auth-helpers"
 
 export const adminSignupSchema = z.object({
   name: z.string().min(2),
@@ -22,9 +23,9 @@ export async function createAdminAccount(data: AdminSignupInput) {
 
   await prisma.admin.create({
     data: {
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
+      name: data.name.trim(),
+      email: normalizeAdminEmail(data.email),
+      phone: data.phone.trim(),
       password: hashedPw,
       secretKey: hashedSecret,
     },
