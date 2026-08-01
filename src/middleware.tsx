@@ -13,7 +13,9 @@ export default auth((req) => {
   const path = req.nextUrl.pathname
 
   if (path.startsWith("/api/auth")) return NextResponse.next()
-  if (path === "/api/admin/login" || path === "/api/admin/signup") return NextResponse.next()
+  if (path === "/api/admin/login" || path === "/api/admin/signup" || path === "/api/admin/reset-password") {
+    return NextResponse.next()
+  }
   if (path === "/api/csrf") {
     if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     return NextResponse.next()
@@ -82,6 +84,7 @@ export const config = {
     "/api/auth/:path*",
     "/api/admin/login",
     "/api/admin/signup",
+    "/api/admin/reset-password",
     "/api/csrf",
     "/api/backups/:path*",
     "/api/upload",

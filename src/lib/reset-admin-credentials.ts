@@ -1,4 +1,4 @@
-﻿import { prisma } from "@/lib/prisma"
+import { prisma } from "@/lib/prisma"
 import { compare, hash } from "bcryptjs"
 import { Prisma } from "@prisma/client"
 import { normalizeAdminEmail } from "@/lib/auth-helpers"
@@ -7,7 +7,7 @@ export type ResetPasswordResult =
   | { success: true }
   | { success: false; error: string }
 
-export async function resetPassword(data: {
+export async function resetAdminCredentials(data: {
   secretKey: string
   newEmail?: string
   newPassword?: string
@@ -44,7 +44,7 @@ export async function resetPassword(data: {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return { success: false, error: "That email is already in use" }
     }
-    console.error("resetPassword failed:", error)
+    console.error("resetAdminCredentials failed:", error)
     return { success: false, error: "Could not update credentials. Try again." }
   }
 }
