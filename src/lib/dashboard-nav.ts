@@ -16,12 +16,11 @@ const ROUTE_LABELS: Record<string, string> = {
   appointment: "Appointment",
   about: "About",
   contact: "Contact",
-  lawyer: "Lawyer",
+  lawyer: "Overview",
   "judge-court": "Judge Court",
   "high-court": "High Court",
   "supreme-court": "Supreme Court",
   "cause-list": "Cause List",
-  clients: "All Clients",
   system: "System",
   backup: "Backup & Restore",
 }

@@ -16,7 +16,7 @@ export function CreateBackupButton() {
     startTransition(async () => {
       try {
         await backupDatabase(csrf)
-        toast.success("Backup created")
+        toast.success("Backup exported")
         router.refresh()
       } catch (err) {
         const message = err instanceof Error ? err.message : "Backup failed"
@@ -27,7 +27,7 @@ export function CreateBackupButton() {
 
   return (
     <Button type="button" onClick={handleCreate} disabled={isPending}>
-      {isPending ? "Generating…" : "Generate Backup"}
+        {isPending ? "Exporting…" : "Export Backup"}
     </Button>
   )
 }

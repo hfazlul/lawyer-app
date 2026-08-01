@@ -30,6 +30,6 @@ export const DEFAULT_NAV_ITEMS = [
   { labelEn: "About", labelBn: "পরিচিতি", href: "/about", sortOrder: 4 },
   { labelEn: "Contact", labelBn: "যোগাযোগ", href: "/contact", sortOrder: 5 },
 ] as const
-export const ARCHIVE_RETENTION_DAYS = 7
+export const ARCHIVE_RETENTION_DAYS = 5
 export const CSRF_COOKIE = "csrf_token"
 export const LANG_COOKIE = "lang"

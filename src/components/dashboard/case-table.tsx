@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useTransition } from "react"
+import { useEffect, useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,15 +17,16 @@ import {
 import {
   createCase,
   updateCase,
-  deleteCase,
   toggleCaseStatus,
 } from "@/actions/admin/case-actions"
 import { CaseFormModal, type CaseFormValues } from "./case-form-modal"
 import { CaseHistoryPanel } from "./case-history-panel"
 import { useCsrf } from "@/components/admin/csrf-provider"
-import { formatCourtName, formatOnBehalf } from "@/lib/case-helpers"
+import { formatCourtName, formatOnBehalf, stripHtmlTags } from "@/lib/case-helpers"
 import { formatAppDate } from "@/lib/date-format"
+import { cn } from "@/lib/utils"
 import { ClientNow } from "@/components/dashboard/client-now"
+import { DEFAULT_TABLE_PAGE_SIZE, TablePagination } from "@/components/ui/table-pagination"
 import type { CaseStatus } from "@/types"
 import type { Case, CaseHistory, CourtType } from "@prisma/client"
 import { ExternalLink, History, Pencil, Plus, Trash2 } from "lucide-react"
@@ -44,6 +45,7 @@ interface CaseTableProps {
   searchable?: boolean
   historyPhoneFilter?: boolean
   compact?: boolean
+  pageSize?: number
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -52,6 +54,17 @@ function StatusBadge({ status }: { status: string }) {
   if (s === "completed") return <Badge variant="success">Completed</Badge>
   if (s === "failed") return <Badge variant="destructive">Failed</Badge>
   return <Badge variant="muted">{status}</Badge>
+}
+
+function getCaseRowClassName(status: string) {
+  const s = status.toLowerCase()
+  if (s === "failed") {
+    return "bg-red-50/90 hover:bg-red-100/80 border-l-4 border-l-red-400"
+  }
+  if (s === "completed") {
+    return "bg-emerald-50/90 hover:bg-emerald-100/80 border-l-4 border-l-emerald-500"
+  }
+  return "hover:bg-muted/40"
 }
 
 function formToPayload(values: CaseFormValues) {
@@ -81,12 +94,14 @@ export function CaseTable({
   searchable = true,
   historyPhoneFilter = false,
   compact = false,
+  pageSize = DEFAULT_TABLE_PAGE_SIZE,
 }: CaseTableProps) {
   const router = useRouter()
   const csrfToken = useCsrf()
   const [isPending, startTransition] = useTransition()
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<"all" | CaseStatus>("all")
+  const [page, setPage] = useState(0)
   const [formOpen, setFormOpen] = useState(false)
   const [editingCase, setEditingCase] = useState<CaseWithHistory | null>(null)
   const [historyCase, setHistoryCase] = useState<CaseWithHistory | null>(null)
@@ -105,6 +120,20 @@ export function CaseTable({
       )
     })
   }, [cases, search, statusFilter])
+
+  useEffect(() => {
+    setPage(0)
+  }, [search, statusFilter])
+
+  const paginated = useMemo(() => {
+    const start = page * pageSize
+    return filtered.slice(start, start + pageSize)
+  }, [filtered, page, pageSize])
+
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+    if (page > totalPages - 1) setPage(Math.max(0, totalPages - 1))
+  }, [filtered.length, page, pageSize])
 
   const openCreate = () => {
     setEditingCase(null)
@@ -151,15 +180,26 @@ export function CaseTable({
     if (!deleteTarget) return
     startTransition(async () => {
       try {
-        await deleteCase(csrfToken, deleteTarget.id)
-        toast.success("Case deleted")
+        const res = await fetch(`/api/cases/${deleteTarget.id}`, {
+          method: "DELETE",
+          credentials: "same-origin",
+          cache: "no-store",
+        })
+        const body = (await res.json().catch(() => ({}))) as { error?: string }
+        if (!res.ok) throw new Error(body.error || "Could not delete case")
+        toast.success("Case deleted — saved to archive")
         setDeleteTarget(null)
         router.refresh()
-      } catch {
-        toast.error("Could not delete case")
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Could not delete case")
       }
     })
   }
+
+  const columnCount =
+    8 +
+    (showCourtColumn ? 1 : 0) +
+    (compact ? 1 : 6)
 
   return (
     <div className="case-table space-y-4">
@@ -197,23 +237,27 @@ export function CaseTable({
         Printed <ClientNow /> — {filtered.length} case(s)
       </p>
 
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-hidden">
+        <div className="table-scroll-hint text-center text-[10px] text-muted-foreground md:hidden">
+          Swipe left/right to see all columns
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
-              {!compact && <TableHead className="w-12">#</TableHead>}
+              {!compact && <TableHead className="hidden w-12 sm:table-cell">#</TableHead>}
               <TableHead>Client</TableHead>
               <TableHead>Case No</TableHead>
-              {showCourtColumn && <TableHead>Court</TableHead>}
-              <TableHead>Type</TableHead>
-              {!compact && <TableHead>On Behalf</TableHead>}
+              {showCourtColumn && <TableHead className="hidden md:table-cell">Court</TableHead>}
+              <TableHead className="hidden sm:table-cell">Type</TableHead>
+              {!compact && <TableHead className="hidden lg:table-cell">On Behalf</TableHead>}
               <TableHead>Contact</TableHead>
-              {!compact && <TableHead>Email</TableHead>}
-              <TableHead>Prev Date</TableHead>
+              {!compact && <TableHead className="hidden lg:table-cell">Email</TableHead>}
+              <TableHead className="hidden md:table-cell">Prev Date</TableHead>
               <TableHead>Next Date</TableHead>
-              {!compact && <TableHead>Steps</TableHead>}
+              {!compact && <TableHead className="hidden xl:table-cell">Steps</TableHead>}
               <TableHead>Status</TableHead>
-              <TableHead>File</TableHead>
+              <TableHead className="hidden sm:table-cell">File</TableHead>
+              <TableHead className="no-print text-center">History</TableHead>
               {!compact && <TableHead className="no-print text-right">Actions</TableHead>}
             </TableRow>
           </TableHeader>
@@ -221,32 +265,32 @@ export function CaseTable({
             {filtered.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={compact ? 9 : 13}
+                  colSpan={columnCount}
                   className="text-center text-muted-foreground"
                 >
                   No cases found
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map((c) => (
-                <TableRow key={c.id}>
-                  {!compact && <TableCell className="text-muted-foreground">{c.serial ?? "—"}</TableCell>}
-                  <TableCell className="font-medium">{c.clientName}</TableCell>
-                  <TableCell>{c.caseNo}</TableCell>
-                  {showCourtColumn && <TableCell>{formatCourtName(c.court)}</TableCell>}
-                  <TableCell>{c.caseType}</TableCell>
-                  {!compact && <TableCell>{formatOnBehalf(c.onBehalf)}</TableCell>}
-                  <TableCell>{c.contactNo}</TableCell>
-                  {!compact && <TableCell className="max-w-[120px] truncate">{c.email || "—"}</TableCell>}
-                  <TableCell className="whitespace-nowrap">
+              paginated.map((c) => (
+                <TableRow key={c.id} className={cn("transition-colors", getCaseRowClassName(c.status))}>
+                  {!compact && <TableCell className="hidden text-muted-foreground sm:table-cell">{c.serial ?? "—"}</TableCell>}
+                  <TableCell className="max-w-[120px] font-medium sm:max-w-none">{c.clientName}</TableCell>
+                  <TableCell className="whitespace-nowrap">{c.caseNo}</TableCell>
+                  {showCourtColumn && <TableCell className="hidden md:table-cell">{formatCourtName(c.court)}</TableCell>}
+                  <TableCell className="hidden sm:table-cell">{c.caseType}</TableCell>
+                  {!compact && <TableCell className="hidden lg:table-cell">{formatOnBehalf(c.onBehalf)}</TableCell>}
+                  <TableCell className="whitespace-nowrap">{c.contactNo}</TableCell>
+                  {!compact && <TableCell className="hidden max-w-[120px] truncate lg:table-cell">{c.email || "—"}</TableCell>}
+                  <TableCell className="hidden whitespace-nowrap md:table-cell">
                     {formatAppDate(c.previousDate)}
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
                     {formatAppDate(c.nextDate)}
                   </TableCell>
                   {!compact && (
-                    <TableCell className="max-w-[160px] truncate" title={c.steps ?? undefined}>
-                      {c.steps || "—"}
+                    <TableCell className="hidden max-w-[160px] truncate xl:table-cell" title={c.steps ? stripHtmlTags(c.steps) : undefined}>
+                      {c.steps ? stripHtmlTags(c.steps) : "—"}
                     </TableCell>
                   )}
                   <TableCell>
@@ -265,7 +309,7 @@ export function CaseTable({
                       <StatusBadge status={c.status} />
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     {c.caseFileLink ? (
                       <a
                         href={c.caseFileLink}
@@ -280,17 +324,19 @@ export function CaseTable({
                       "—"
                     )}
                   </TableCell>
+                  <TableCell className="no-print text-center">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="View history"
+                      onClick={() => setHistoryCase(c)}
+                    >
+                      <History className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
                   {!compact && (
                     <TableCell className="no-print text-right">
                       <div className="flex justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          title="History"
-                          onClick={() => setHistoryCase(c)}
-                        >
-                          <History className="h-4 w-4" />
-                        </Button>
                         {allowEdit && (
                           <Button
                             variant="ghost"
@@ -319,9 +365,16 @@ export function CaseTable({
             )}
           </TableBody>
         </Table>
+        <TablePagination
+          page={page}
+          pageSize={pageSize}
+          totalItems={filtered.length}
+          onPageChange={setPage}
+        />
       </div>
 
       <CaseFormModal
+        key={editingCase?.id ?? "new"}
         open={formOpen}
         onOpenChange={setFormOpen}
         defaultCourt={defaultCourt}

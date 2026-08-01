@@ -12,8 +12,9 @@ import {
   testimonialSchema,
 } from "@/lib/validations/cms"
 import { archiveContent } from "@/actions/admin/archive"
-import { archiveIfExists, getNextSortOrder, revalidatePublicSite } from "@/lib/cms-helpers"
+import { archiveIfExists, getNextSortOrder, normalizeBilingualCmsData, revalidatePublicSite } from "@/lib/cms-helpers"
 import { CMS_TABLES } from "@/lib/cms-tables"
+import { syncFeaturedServicesToServicePages } from "@/lib/sync-services"
 
 export async function getHomeIntroAdmin() {
   await requireAdmin()
@@ -40,11 +41,18 @@ export async function getFeaturedServicesAdmin() {
   return prisma.featuredService.findMany({ orderBy: { sortOrder: "asc" } })
 }
 
+const FEATURED_BILINGUAL_PAIRS = [
+  ["titleEn", "titleBn"],
+  ["descriptionEn", "descriptionBn"],
+] as const satisfies ReadonlyArray<readonly [string, string]>
+
 export async function createFeaturedService(csrfToken: string, data: unknown) {
   const { ip } = await requireAdminMutation(csrfToken)
   const sortOrder = await getNextSortOrder(() => prisma.featuredService.findMany({ select: { sortOrder: true } }))
-  const parsed = featuredServiceSchema.parse({ ...(data as object), sortOrder })
+  const normalized = normalizeBilingualCmsData(data, [...FEATURED_BILINGUAL_PAIRS])
+  const parsed = featuredServiceSchema.parse({ ...normalized, sortOrder })
   const item = await prisma.featuredService.create({ data: parsed })
+  await syncFeaturedServicesToServicePages()
   await auditLog("featured_service_create", `Created featured service ${item.id}`, ip)
   revalidatePublicSite()
   return item
@@ -55,8 +63,10 @@ export async function updateFeaturedService(csrfToken: string, id: number, data:
   const existing = await prisma.featuredService.findUnique({ where: { id } })
   if (!existing) throw new Error("Not found")
   await archiveIfExists(CMS_TABLES.FeaturedService, existing)
-  const parsed = featuredServiceSchema.partial().parse(data)
+  const normalized = normalizeBilingualCmsData(data, [...FEATURED_BILINGUAL_PAIRS])
+  const parsed = featuredServiceSchema.partial().parse(normalized)
   const item = await prisma.featuredService.update({ where: { id }, data: parsed })
+  await syncFeaturedServicesToServicePages()
   await auditLog("featured_service_update", `Updated featured service ${id}`, ip)
   revalidatePublicSite()
   return item

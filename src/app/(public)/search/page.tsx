@@ -34,7 +34,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         lang={lang}
       />
       <section className="py-20">
-        <div className="container mx-auto max-w-3xl px-4">
+        <div className="site-container max-w-3xl">
           {query.length < 2 ? (
             <EmptyState
               lang={lang}

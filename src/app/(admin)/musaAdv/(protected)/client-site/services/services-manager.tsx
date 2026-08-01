@@ -10,6 +10,7 @@ import { CmsItemActions } from "@/components/admin/cms-item-actions"
 import {
   createService, updateService, toggleServiceStatus, archiveService, deleteService,
 } from "@/actions/admin/services"
+import { getCmsErrorMessage } from "@/lib/cms-helpers"
 import { useCsrf } from "@/components/admin/csrf-provider"
 import { toast } from "sonner"
 import { Plus } from "lucide-react"
@@ -31,8 +32,8 @@ export function ServicesManager({ services }: { services: ServicePage[] }) {
         toast.success("Service saved")
         setShowForm(false); setEditingId(null); setForm({})
         router.refresh()
-      } catch {
-        toast.error("Save failed")
+      } catch (err) {
+        toast.error(getCmsErrorMessage(err))
       }
     })
   }
@@ -46,16 +47,52 @@ export function ServicesManager({ services }: { services: ServicePage[] }) {
       </div>
 
       {(showForm || editingId) && (
-        <div className="rounded-lg border p-4 space-y-4">
-          <BilingualInput label="Title" enName="titleEn" bnName="titleBn"
+        <div className="space-y-6 rounded-lg border p-4">
+          <div className="space-y-4 rounded-lg border border-dashed bg-muted/20 p-4">
+            <div>
+              <h3 className="font-semibold">Detail Page Hero</h3>
+              <p className="text-sm text-muted-foreground">
+                Banner at the top of <code>/services/[id]</code>. Leave blank to use the card title.
+              </p>
+            </div>
+            <BilingualInput
+              label="Hero Title"
+              enName="bannerTitleEn"
+              bnName="bannerTitleBn"
+              enValue={form.bannerTitleEn ?? ""}
+              bnValue={form.bannerTitleBn ?? ""}
+              onEnChange={(v) => setForm((f) => ({ ...f, bannerTitleEn: v }))}
+              onBnChange={(v) => setForm((f) => ({ ...f, bannerTitleBn: v }))}
+            />
+            <BilingualInput
+              label="Hero Subtitle"
+              enName="bannerSubtitleEn"
+              bnName="bannerSubtitleBn"
+              enValue={form.bannerSubtitleEn ?? ""}
+              bnValue={form.bannerSubtitleBn ?? ""}
+              onEnChange={(v) => setForm((f) => ({ ...f, bannerSubtitleEn: v }))}
+              onBnChange={(v) => setForm((f) => ({ ...f, bannerSubtitleBn: v }))}
+              multiline
+            />
+          </div>
+
+          <BilingualInput label="Card Title" enName="titleEn" bnName="titleBn"
             enValue={form.titleEn ?? ""} bnValue={form.titleBn ?? ""}
             onEnChange={(v) => setForm((f) => ({ ...f, titleEn: v }))}
             onBnChange={(v) => setForm((f) => ({ ...f, titleBn: v }))} required />
-          <BilingualInput label="Content" enName="contentEn" bnName="contentBn"
+          <BilingualInput label="Full Content" enName="contentEn" bnName="contentBn"
             enValue={form.contentEn ?? ""} bnValue={form.contentBn ?? ""}
             onEnChange={(v) => setForm((f) => ({ ...f, contentEn: v }))}
             onBnChange={(v) => setForm((f) => ({ ...f, contentBn: v }))} multiline />
-          <ImageUpload label="Icon / Image" value={form.icon ?? ""} onChange={(v) => setForm((f) => ({ ...f, icon: v }))} />
+          <p className="-mt-2 text-xs text-muted-foreground">
+            Full description on the detail page. Card text on home and services pages uses the first ~200 characters.
+          </p>
+          <ImageUpload
+            label="Card Image"
+            hint="Recommended: 600 × 400 px (semi-square). Shown at the top of the service card with rounded corners."
+            value={form.icon ?? ""}
+            onChange={(v) => setForm((f) => ({ ...f, icon: v }))}
+          />
           <div className="flex gap-2">
             <Button onClick={save} disabled={isPending}>{editingId ? "Update" : "Create"}</Button>
             <Button variant="outline" onClick={() => { setShowForm(false); setEditingId(null) }}>Cancel</Button>
@@ -83,7 +120,17 @@ export function ServicesManager({ services }: { services: ServicePage[] }) {
                   onEdit={() => {
                     setEditingId(s.id)
                     setShowForm(true)
-                    setForm({ titleEn: s.titleEn, titleBn: s.titleBn, contentEn: s.contentEn, contentBn: s.contentBn, icon: s.icon ?? "" })
+                    setForm({
+                      titleEn: s.titleEn,
+                      titleBn: s.titleBn,
+                      contentEn: s.contentEn,
+                      contentBn: s.contentBn,
+                      icon: s.icon ?? "",
+                      bannerTitleEn: s.bannerTitleEn ?? "",
+                      bannerTitleBn: s.bannerTitleBn ?? "",
+                      bannerSubtitleEn: s.bannerSubtitleEn ?? "",
+                      bannerSubtitleBn: s.bannerSubtitleBn ?? "",
+                    })
                   }}
                   onToggleStatus={toggleServiceStatus}
                   onArchive={archiveService}

@@ -6,7 +6,7 @@ import { requireAdminMutation } from "@/lib/admin-mutation"
 import { auditLog } from "@/lib/audit"
 import { servicePageSchema } from "@/lib/validations/cms"
 import { archiveContent } from "@/actions/admin/archive"
-import { archiveIfExists, getNextSortOrder, revalidatePublicSite } from "@/lib/cms-helpers"
+import { archiveIfExists, getNextSortOrder, normalizeBilingualCmsData, revalidatePublicSite } from "@/lib/cms-helpers"
 import { CMS_TABLES } from "@/lib/cms-tables"
 
 export async function getServicesAdmin() {
@@ -14,10 +14,18 @@ export async function getServicesAdmin() {
   return prisma.servicePage.findMany({ orderBy: { sortOrder: "asc" } })
 }
 
+const SERVICE_BILINGUAL_PAIRS = [
+  ["titleEn", "titleBn"],
+  ["contentEn", "contentBn"],
+  ["bannerTitleEn", "bannerTitleBn"],
+  ["bannerSubtitleEn", "bannerSubtitleBn"],
+] as const satisfies ReadonlyArray<readonly [string, string]>
+
 export async function createService(csrfToken: string, data: unknown) {
   const { ip } = await requireAdminMutation(csrfToken)
   const sortOrder = await getNextSortOrder(() => prisma.servicePage.findMany({ select: { sortOrder: true } }))
-  const parsed = servicePageSchema.parse({ ...(data as object), sortOrder })
+  const normalized = normalizeBilingualCmsData(data, [...SERVICE_BILINGUAL_PAIRS])
+  const parsed = servicePageSchema.parse({ ...normalized, sortOrder })
   const item = await prisma.servicePage.create({ data: parsed })
   await auditLog("service_create", `Created service ${item.id}`, ip)
   revalidatePublicSite()
@@ -29,7 +37,8 @@ export async function updateService(csrfToken: string, id: number, data: unknown
   const existing = await prisma.servicePage.findUnique({ where: { id } })
   if (!existing) throw new Error("Not found")
   await archiveIfExists(CMS_TABLES.ServicePage, existing)
-  const parsed = servicePageSchema.partial().parse(data)
+  const normalized = normalizeBilingualCmsData(data, [...SERVICE_BILINGUAL_PAIRS])
+  const parsed = servicePageSchema.partial().parse(normalized)
   const item = await prisma.servicePage.update({ where: { id }, data: parsed })
   await auditLog("service_update", `Updated service ${id}`, ip)
   revalidatePublicSite()

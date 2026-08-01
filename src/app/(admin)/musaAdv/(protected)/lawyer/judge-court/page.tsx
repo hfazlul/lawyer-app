@@ -1,6 +1,8 @@
 ﻿import { prisma } from "@/lib/prisma"
 import { CaseTable } from "@/components/dashboard/case-table"
 
+export const dynamic = "force-dynamic"
+
 export default async function Page() {
   const cases = await prisma.case.findMany({
     where: { court: "JUDGE_COURT" },

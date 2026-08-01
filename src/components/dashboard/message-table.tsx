@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useTransition } from "react"
+import { useEffect, useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,15 +8,17 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Copy, Download, FileSpreadsheet, MessageSquare, Phone } from "lucide-react"
+import { Copy, Download, FileSpreadsheet, MessageSquare, Phone, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import {
   exportMessagesCSV,
   exportMessagesExcel,
   markMessageAsRead,
+  deleteMessage,
 } from "@/actions/admin/message-actions"
 import { useCsrf } from "@/components/admin/csrf-provider"
 import { formatAppDate } from "@/lib/date-format"
+import { DEFAULT_TABLE_PAGE_SIZE, TablePagination } from "@/components/ui/table-pagination"
 
 interface Message {
   id: number
@@ -57,6 +59,7 @@ export function MessageTable({ messages }: { messages: Message[] }) {
   const [search, setSearch] = useState("")
   const [typeFilter, setTypeFilter] = useState<"all" | "appointment" | "contact">("all")
   const [statusFilter, setStatusFilter] = useState<"all" | "unread" | "read">("all")
+  const [page, setPage] = useState(0)
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -71,6 +74,20 @@ export function MessageTable({ messages }: { messages: Message[] }) {
       )
     })
   }, [messages, search, typeFilter, statusFilter])
+
+  useEffect(() => {
+    setPage(0)
+  }, [search, typeFilter, statusFilter])
+
+  const paginated = useMemo(() => {
+    const start = page * DEFAULT_TABLE_PAGE_SIZE
+    return filtered.slice(start, start + DEFAULT_TABLE_PAGE_SIZE)
+  }, [filtered, page])
+
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(filtered.length / DEFAULT_TABLE_PAGE_SIZE))
+    if (page > totalPages - 1) setPage(Math.max(0, totalPages - 1))
+  }, [filtered.length, page])
 
   const copyPhone = (phone: string) => {
     navigator.clipboard.writeText(phone)
@@ -120,6 +137,31 @@ export function MessageTable({ messages }: { messages: Message[] }) {
       } catch {
         toast.error("Could not update message")
       }
+    })
+  }
+
+  const handleDelete = (id: number, type: "appointment" | "contact", name: string) => {
+    toast.warning(`Delete message from "${name}"?`, {
+      description: "This cannot be undone.",
+      duration: Infinity,
+      action: {
+        label: "Delete",
+        onClick: () => {
+          startTransition(async () => {
+            try {
+              await deleteMessage(csrf, id, type)
+              toast.success("Message deleted")
+              router.refresh()
+            } catch {
+              toast.error("Could not delete message")
+            }
+          })
+        },
+      },
+      cancel: {
+        label: "Cancel",
+        onClick: () => {},
+      },
     })
   }
 
@@ -217,7 +259,7 @@ export function MessageTable({ messages }: { messages: Message[] }) {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filtered.map((m) => (
+                  paginated.map((m) => (
                     <TableRow key={`${m.type}-${m.id}`}>
                       <TableCell>
                         <Badge variant="outline" className="capitalize">
@@ -249,26 +291,44 @@ export function MessageTable({ messages }: { messages: Message[] }) {
                         <StatusBadge status={m.status} />
                       </TableCell>
                       <TableCell className="text-right">
-                        {m.status.toLowerCase() === "unread" && (
+                        <div className="flex items-center justify-end gap-2">
+                          {m.status.toLowerCase() === "unread" && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={isPending}
+                              onClick={() => handleMarkRead(m.id, m.type)}
+                            >
+                              Mark read
+                            </Button>
+                          )}
                           <Button
                             variant="outline"
-                            size="sm"
+                            size="icon"
                             disabled={isPending}
-                            onClick={() => handleMarkRead(m.id, m.type)}
+                            onClick={() => handleDelete(m.id, m.type, m.name)}
+                            className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            aria-label="Delete message"
                           >
-                            Mark read
+                            <Trash2 className="h-4 w-4" />
                           </Button>
-                        )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
                 )}
               </TableBody>
             </Table>
+            <TablePagination
+              page={page}
+              pageSize={DEFAULT_TABLE_PAGE_SIZE}
+              totalItems={filtered.length}
+              onPageChange={setPage}
+            />
           </div>
           {filtered.length > 0 && (
             <p className="text-xs text-muted-foreground">
-              Showing {filtered.length} of {messages.length} messages
+              {filtered.length} message{filtered.length === 1 ? "" : "s"} match your filters
             </p>
           )}
         </CardContent>

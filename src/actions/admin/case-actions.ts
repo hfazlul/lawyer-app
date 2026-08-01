@@ -2,10 +2,12 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { adminPath } from "@/lib/constants"
 import { auditLog } from "@/lib/audit"
 import { requireAdminMutation } from "@/lib/admin-mutation"
+import { deleteCaseRecord } from "@/lib/case-delete"
 import { caseSchema } from "@/lib/validations/case"
-import { CASE_REVALIDATE_PATHS, datesEqual } from "@/lib/case-helpers"
+import { CASE_REVALIDATE_PATHS, datesEqual, formatStepsHistoryAction } from "@/lib/case-helpers"
 import type { CaseStatus } from "@/types"
 import type { z } from "zod"
 
@@ -58,10 +60,17 @@ export async function createCase(csrfToken: string, data: unknown) {
     },
   })
 
-  const parts = [`Case created`]
-  if (parsed.nextDate) parts.push(`Next: ${parsed.nextDate.toLocaleDateString()}`)
-  if (parsed.steps) parts.push(`Steps: ${parsed.steps}`)
-  await logHistory(newCase.id, parts.join(". "), "active")
+  await logHistory(newCase.id, "Case created", "active")
+  if (parsed.nextDate) {
+    await logHistory(
+      newCase.id,
+      `Next hearing: ${parsed.nextDate.toLocaleDateString()}`,
+      "active"
+    )
+  }
+  if (parsed.steps) {
+    await logHistory(newCase.id, formatStepsHistoryAction(parsed.steps), "active")
+  }
   await auditLog("case_create", `Created case ${newCase.caseNo}`, ip)
   revalidateCasePaths()
   return newCase
@@ -102,7 +111,7 @@ export async function updateCase(csrfToken: string, id: number, data: unknown) {
   if (parsed.steps !== undefined && existing.steps !== parsed.steps) {
     await logHistory(
       existing.id,
-      parsed.steps ? `Steps: ${parsed.steps}` : "Steps cleared",
+      parsed.steps ? formatStepsHistoryAction(parsed.steps) : "steps_cleared",
       existing.status
     )
   }
@@ -115,10 +124,10 @@ export async function updateCase(csrfToken: string, id: number, data: unknown) {
 
 export async function deleteCase(csrfToken: string, id: number) {
   const { ip } = await requireAdminMutation(csrfToken)
-  await prisma.caseHistory.deleteMany({ where: { caseId: id } })
-  await prisma.case.delete({ where: { id } })
+  await deleteCaseRecord(id)
   await auditLog("case_delete", `Deleted case ${id}`, ip)
   revalidateCasePaths()
+  revalidatePath(adminPath("lawyer/archive"))
 }
 
 export async function toggleCaseStatus(csrfToken: string, id: number, status: CaseStatus) {

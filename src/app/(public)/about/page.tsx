@@ -5,7 +5,8 @@ import { getAboutPage } from "@/lib/public-data-cache"
 import { CmsImage } from "@/components/public/cms-image"
 import { PageBanner } from "@/components/public/page-banner"
 import { EmptyState } from "@/components/public/empty-state"
-import { t } from "@/lib/dictionary"
+import { resolveBannerText } from "@/lib/page-banner"
+import { CmsHtmlContent } from "@/components/public/cms-html-content"
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await getLangFromCookies()
@@ -15,14 +16,23 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AboutPage() {
   const [lang, about] = await Promise.all([getLangFromCookies(), getAboutPage()])
 
+  const aboutBanner = resolveBannerText(
+    { en: about?.bannerTitleEn, bn: about?.bannerTitleBn },
+    { en: about?.bannerSubtitleEn, bn: about?.bannerSubtitleBn },
+    {
+      title: { en: "About", bn: "পরিচিতি" },
+      subtitle: {
+        en: "Dedicated to justice, integrity, and client advocacy",
+        bn: "ন্যায়বিচার, সততা ও ক্লায়েন্ট অ্যাডভোকেসির প্রতি নিবেদিত",
+      },
+    }
+  )
+
   if (!about) {
     return (
       <>
-        <PageBanner
-          title={{ en: "About", bn: "পরিচিতি" }}
-          lang={lang}
-        />
-        <section className="container mx-auto px-4 py-20">
+        <PageBanner title={aboutBanner.title} subtitle={aboutBanner.subtitle} lang={lang} />
+        <section className="site-container public-section">
           <EmptyState
             lang={lang}
             title={{ en: "About page not configured", bn: "পরিচিতি পৃষ্ঠা কনফিগার করা হয়নি" }}
@@ -42,20 +52,19 @@ export default async function AboutPage() {
 
   return (
     <>
-      <PageBanner
-        title={{ en: "About", bn: "পরিচিতি" }}
-        subtitle={{
-          en: "Dedicated to justice, integrity, and client advocacy",
-          bn: "ন্যায়বিচার, সততা ও ক্লায়েন্ট অ্যাডভোকেসির প্রতি নিবেদিত",
-        }}
-        lang={lang}
-      />
-      <section className="py-20">
-        <div className="container mx-auto px-4">
+      <PageBanner title={aboutBanner.title} subtitle={aboutBanner.subtitle} lang={lang} />
+      <section className="public-section">
+        <div className="site-container">
           <div className="grid items-center gap-12 md:grid-cols-2">
-            <div className="relative h-96 overflow-hidden rounded-lg shadow-lg">
+            <div className="relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden rounded-lg bg-muted shadow-lg">
               {about.image ? (
-                <CmsImage src={about.image} alt="Lawyer" fill className="object-cover" />
+                <CmsImage
+                  src={about.image}
+                  alt="Lawyer"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 448px"
+                  className="object-cover object-top"
+                />
               ) : (
                 <div className="flex h-full items-center justify-center bg-muted text-muted-foreground">
                   {lang === "bn" ? "ছবি শীঘ্রই" : "Photo coming soon"}
@@ -67,25 +76,19 @@ export default async function AboutPage() {
                 <h2 className="mb-4 font-serif text-2xl font-bold text-navy">
                   {lang === "bn" ? "জীবনী" : "Biography"}
                 </h2>
-                <p className="leading-relaxed text-muted-foreground">
-                  {t({ en: about.bioEn || "", bn: about.bioBn || "" }, lang)}
-                </p>
+                <CmsHtmlContent html={lang === "bn" ? about.bioBn || "" : about.bioEn || ""} />
               </div>
               <div>
                 <h3 className="mb-2 font-serif text-xl font-semibold text-navy">
                   {lang === "bn" ? "অভিজ্ঞতা" : "Experience"}
                 </h3>
-                <p className="leading-relaxed text-muted-foreground">
-                  {t({ en: about.experienceEn || "", bn: about.experienceBn || "" }, lang)}
-                </p>
+                <CmsHtmlContent html={lang === "bn" ? about.experienceBn || "" : about.experienceEn || ""} />
               </div>
               <div>
                 <h3 className="mb-2 font-serif text-xl font-semibold text-navy">
                   {lang === "bn" ? "শিক্ষা" : "Education"}
                 </h3>
-                <p className="leading-relaxed text-muted-foreground">
-                  {t({ en: about.educationEn || "", bn: about.educationBn || "" }, lang)}
-                </p>
+                <CmsHtmlContent html={lang === "bn" ? about.educationBn || "" : about.educationEn || ""} />
               </div>
             </div>
           </div>

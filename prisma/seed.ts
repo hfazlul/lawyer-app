@@ -4,8 +4,8 @@ const prisma = new PrismaClient()
 
 const BROKEN_PLACEHOLDER_IMAGE =
   "https://images.unsplash.com/photo-1589829545855-d10d557cf95f?w=1200&q=80"
-const PLACEHOLDER_IMAGE = "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1200&q=80"
-const LAWYER_IMAGE = "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&q=80"
+const PLACEHOLDER_IMAGE = "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1920&q=85&auto=format&fit=crop"
+const LAWYER_IMAGE = "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=1920&q=85&auto=format&fit=crop"
 const MAP_IMAGE = "https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&q=80"
 
 async function main() {
@@ -30,6 +30,8 @@ async function main() {
       footerAddressBn: "১২৩ জাস্টিস অ্যাভিনিউ, ঢাকা ১০০০, বাংলাদেশ",
       facebook: "https://facebook.com",
       youtube: "https://youtube.com",
+      themeNavy: "220 52% 16%",
+      themeGold: "38 42% 58%",
     },
   })
 
@@ -86,6 +88,8 @@ async function main() {
       descriptionEn: "For over 15 years, our firm has represented clients in complex litigation, family disputes, and corporate matters with a commitment to excellence and client care.",
       descriptionBn: "১৫ বছরেরও বেশি সময় ধরে আমাদের ফার্ম জটিল মামলা, পারিবারিক বিবাদ ও কর্পোরেট বিষয়ে উৎকর্ষ ও ক্লায়েন্ট যত্নের প্রতিশ্রুতি নিয়ে ক্লায়েন্টদের প্রতিনিধিত্ব করছে।",
       lawyerImage: LAWYER_IMAGE,
+      degreeEn: "LL.B | Advocate, Supreme Court of Bangladesh",
+      degreeBn: "এলএলবি | অ্যাডভোকেট, বাংলাদেশ সুপ্রিম কোর্ট",
       ctaTextEn: "Contact Us",
       ctaTextBn: "যোগাযোগ করুন",
       ctaLink: "/contact",
@@ -172,27 +176,92 @@ async function main() {
   }
 
   const servicePageCount = await prisma.servicePage.count()
+  const servicePages = [
+    {
+      titleEn: "Civil Litigation",
+      titleBn: "দেওয়ানি মামলা",
+      contentEn:
+        "We represent clients in civil courts for disputes involving contracts, property, torts, and damages. Our team prepares thorough pleadings, gathers supporting evidence, and advocates effectively at every hearing.\n\nFrom pre-litigation advice to final judgment, we guide you through each stage with clarity and strategic planning.",
+      contentBn:
+        "চুক্তি, সম্পত্তি, অপকর্ম ও ক্ষতিপূরণ সংক্রান্ত বিবাদে আমরা দেওয়ানি আদালতে ক্লায়েন্টদের প্রতিনিধিত্ব করি। আমাদের দল প্রতিটি শুনানিতে কার্যকরভাবে যুক্তি উপস্থাপন করে।\n\nমামলা দায়েরের আগে পরামর্শ থেকে চূড়ান্ত রায় পর্যন্ত আমরা প্রতিটি ধাপে স্পষ্ট নির্দেশনা দিয়ে থাকি।",
+      icon: "https://images.unsplash.com/photo-1589829545855-d10d557cf95f?w=800&q=80",
+    },
+    {
+      titleEn: "Criminal Defense",
+      titleBn: "ফৌজদারি আইন",
+      contentEn:
+        "From bail applications to full trial defense, we protect the rights of the accused at magistrate, sessions, and higher courts.\n\nWe build a strong defense strategy, challenge unlawful evidence, and ensure fair treatment throughout the criminal process.",
+      contentBn:
+        "জামিন আবেদন থেকে সম্পূর্ণ বিচার পর্যন্ত, আমরা ম্যাজিস্ট্রেট, সেশন ও উচ্চ আদালতে অভিযুক্তের অধিকার রক্ষা করি।\n\nআমরা শক্তিশালী প্রতিরক্ষা কৌশল তৈরি করি এবং ফৌজদারি প্রক্রিয়ায় ন্যায্য আচরণ নিশ্চিত করি।",
+      icon: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80",
+    },
+    {
+      titleEn: "Family Law",
+      titleBn: "পারিবারিক আইন",
+      contentEn:
+        "Divorce, maintenance, child custody, and inheritance matters handled with discretion and care.\n\nWe prioritize sensitive family interests while pursuing practical legal solutions that protect your rights and dignity.",
+      contentBn:
+        "তালাক, ভরণপোষণ, সন্তানের অভিভাবকত্ব ও উত্তরাধিকার বিষয় সতর্কতা ও যত্নের সাথে পরিচালনা করা হয়।\n\nপারিবারিক স্বার্থকে অগ্রাধিকার দিয়ে আমরা আপনার অধিকার রক্ষায় বাস্তবসম্মত আইনি সমাধান খুঁজে বের করি।",
+      icon: "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800&q=80",
+    },
+    {
+      titleEn: "Corporate Law",
+      titleBn: "কর্পোরেট আইন",
+      contentEn:
+        "Business formation, regulatory compliance, shareholder disputes, and commercial contracts for companies of all sizes.\n\nWe help businesses reduce legal risk while supporting growth through sound corporate governance.",
+      contentBn:
+        "ব্যবসা প্রতিষ্ঠা, নিয়ন্ত্রক সম্মতি, শেয়ারহোল্ডার বিবাদ ও বাণিজ্যিক চুক্তি সব ধরনের প্রতিষ্ঠানের জন্য।\n\nআমরা আইনি ঝুঁকি কমিয়ে শক্তিশালী কর্পোরেট গভর্নেন্সের মাধ্যমে ব্যবসার প্রবৃদ্ধিতে সহায়তা করি।",
+      icon: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&q=80",
+    },
+    {
+      titleEn: "Property Law",
+      titleBn: "সম্পত্তি আইন",
+      contentEn:
+        "Land disputes, title verification, lease agreements, and property transactions handled with meticulous due diligence.\n\nWe protect your ownership rights and help resolve conflicts before they escalate into costly litigation.",
+      contentBn:
+        "জমি বিবাদ, খতিয়ান যাচাই, লিজ চুক্তি ও সম্পত্তি লেনদেন যত্নসহকারে পরিচালনা করা হয়।\n\nআমরা আপনার মালিকানার অধিকার রক্ষা করি এবং বিবাদ দীর্ঘ মামলায় পরিণত হওয়ার আগে সমাধান করতে সহায়তা করি।",
+      icon: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80",
+    },
+    {
+      titleEn: "Legal Consultation",
+      titleBn: "আইনি পরামর্শ",
+      contentEn:
+        "Expert advice before you take legal action — understand your options, risks, and the best path forward.\n\nOur consultations help you make informed decisions with confidence, whether for personal or business matters.",
+      contentBn:
+        "আইনি পদক্ষেপ নেওয়ার আগে বিশেষজ্ঞ পরামর্শ — আপনার বিকল্প, ঝুঁকি ও সঠিক পথ বুঝে নিন।\n\nব্যক্তিগত বা ব্যবসায়িক যেকোনো বিষয়ে আত্মবিশ্বাসের সাথে সিদ্ধান্ত নিতে আমাদের পরামর্শ সহায়ক।",
+      icon: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80",
+    },
+  ]
+
   if (servicePageCount === 0) {
-    const pages = [
-      { titleEn: "Civil Litigation", titleBn: "দেওয়ানি মামলা", contentEn: "We represent clients in civil courts for disputes involving contracts, property, torts, and damages. Our team prepares thorough pleadings and advocates effectively at every hearing.", contentBn: "চুক্তি, সম্পত্তি, অপকর্ম ও ক্ষতিপূরণ সংক্রান্ত বিবাদে আমরা দেওয়ানি আদালতে ক্লায়েন্টদের প্রতিনিধিত্ব করি। আমাদের দল প্রতিটি শুনানিতে কার্যকরভাবে যুক্তি উপস্থাপন করে।" },
-      { titleEn: "Criminal Defense", titleBn: "ফৌজদারি আইন", contentEn: "From bail applications to full trial defense, we protect the rights of the accused at magistrate, sessions, and higher courts.", contentBn: "জামিন আবেদন থেকে সম্পূর্ণ বিচার পর্যন্ত, আমরা ম্যাজিস্ট্রেট, সেশন ও উচ্চ আদালতে অভিযুক্তের অধিকার রক্ষা করি।" },
-      { titleEn: "Family Law", titleBn: "পারিবারিক আইন", contentEn: "Divorce, maintenance, child custody, and inheritance matters handled with discretion and care.", contentBn: "তালাক, ভরণপোষণ, সন্তানের অভিভাবকত্ব ও উত্তরাধিকার বিষয় সতর্কতা ও যত্নের সাথে পরিচালনা।" },
-    ]
     await prisma.servicePage.createMany({
-      data: pages.map((p, i) => ({ ...p, sortOrder: i + 1 })),
+      data: servicePages.map((page, index) => ({ ...page, sortOrder: index + 1 })),
     })
+  } else {
+    for (let index = 0; index < servicePages.length; index++) {
+      const page = servicePages[index]
+      const existing = await prisma.servicePage.findFirst({ where: { titleEn: page.titleEn } })
+      if (!existing) {
+        await prisma.servicePage.create({ data: { ...page, sortOrder: index + 1 } })
+      }
+    }
   }
 
   await prisma.appointmentSetting.upsert({
     where: { id: 1 },
-    update: {},
+    update: {
+      mapQuery: "123 Justice Avenue, Dhaka 1000, Bangladesh",
+    },
     create: {
       id: 1,
       bannerTitleEn: "Schedule a Consultation",
       bannerTitleBn: "পরামর্শ নির্ধারণ করুন",
+      bannerSubtitleEn: "Book a time to discuss your legal needs",
+      bannerSubtitleBn: "আপনার আইনি প্রয়োজন নিয়ে আলোচনার জন্য সময় নির্ধারণ করুন",
       officeHoursEn: "Sunday - Thursday, 9:00 AM - 6:00 PM",
       officeHoursBn: "রবিবার - বৃহস্পতিবার, সকাল ৯:০০ - সন্ধ্যা ৬:০০",
       mapImage: MAP_IMAGE,
+      mapQuery: "123 Justice Avenue, Dhaka 1000, Bangladesh",
       contactPhone: "+880 1XXX-XXXXXX",
       contactEmail: "appointment@musaassociates.example",
     },
@@ -200,18 +269,35 @@ async function main() {
 
   await prisma.contactSetting.upsert({
     where: { id: 1 },
-    update: {},
+    update: {
+      mapQuery: "District & Sessions Judge Court, Dhaka",
+    },
     create: {
       id: 1,
       bannerTitleEn: "Contact Us",
       bannerTitleBn: "যোগাযোগ করুন",
+      bannerSubtitleEn: "We are here to answer your questions",
+      bannerSubtitleBn: "আপনার প্রশ্নের উত্তর দিতে আমরা এখানে আছি",
       officeHoursEn: "Sunday - Thursday, 9:00 AM - 6:00 PM",
       officeHoursBn: "রবিবার - বৃহস্পতিবার, সকাল ৯:০০ - সন্ধ্যা ৬:০০",
       mapImage: MAP_IMAGE,
+      mapQuery: "District & Sessions Judge Court, Dhaka",
       phone: "+880 1XXX-XXXXXX",
       email: "info@musaassociates.example",
       addressEn: "123 Justice Avenue, Dhaka 1000, Bangladesh",
       addressBn: "১২৩ জাস্টিস অ্যাভিনিউ, ঢাকা ১০০০, বাংলাদেশ",
+    },
+  })
+
+  await prisma.servicesSetting.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      bannerTitleEn: "Our Legal Services",
+      bannerTitleBn: "আমাদের আইনি সেবাসমূহ",
+      bannerSubtitleEn: "Comprehensive legal solutions with integrity and expertise",
+      bannerSubtitleBn: "সততা ও দক্ষতার সাথে বিস্তৃত আইনি সমাধান",
     },
   })
 
@@ -220,6 +306,10 @@ async function main() {
     update: {},
     create: {
       id: 1,
+      bannerTitleEn: "About",
+      bannerTitleBn: "পরিচিতি",
+      bannerSubtitleEn: "Dedicated to justice, integrity, and client advocacy",
+      bannerSubtitleBn: "ন্যায়বিচার, সততা ও ক্লায়েন্ট অ্যাডভোকেসির প্রতি নিবেদিত",
       image: LAWYER_IMAGE,
       bioEn: "Advocate Musa Rahman is a senior lawyer with over 15 years of practice in the High Court Division. He leads Musa & Associates with a focus on client-centered advocacy.",
       bioBn: "অ্যাডভোকেট মুসা রহমান হাইকোর্ট বিভাগে ১৫ বছরেরও বেশি অনুশীলনের একজন সিনিয়র আইনজীবী। তিনি ক্লায়েন্ট-কেন্দ্রিক অ্যাডভোকেসির উপর গুরুত্ব দিয়ে মুসা অ্যান্ড অ্যাসোসিয়েটস পরিচালনা করেন।",
@@ -359,6 +449,10 @@ async function main() {
   if (brokenImageFix[0].count + brokenImageFix[1].count > 0) {
     console.log(`Fixed ${brokenImageFix[0].count + brokenImageFix[1].count} broken image URL(s).`)
   }
+
+  const { syncFeaturedServicesToServicePages } = await import("../src/lib/sync-services")
+  await syncFeaturedServicesToServicePages()
+  console.log("Synced featured services to service pages.")
 
   console.log("Seed completed successfully.")
 }

@@ -14,14 +14,36 @@ import {
   Building2,
   Landmark,
   ListChecks,
-  Users,
   Database,
+  Archive,
   ChevronDown,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { adminPath } from "@/lib/constants"
 import { useSidebar } from "@/stores/sidebar"
 import { useEffect, useState } from "react"
+
+function normalizePath(path: string) {
+  if (!path) return "/"
+  const withoutQuery = path.split("?")[0]?.split("#")[0] ?? path
+  return withoutQuery.replace(/\/$/, "") || "/"
+}
+
+function getActiveHref(pathname: string, items: { href: string }[]) {
+  const current = normalizePath(pathname)
+  let bestMatch: string | null = null
+
+  for (const item of items) {
+    const href = normalizePath(item.href)
+    if (current === href || current.startsWith(`${href}/`)) {
+      if (!bestMatch || href.length > bestMatch.length) {
+        bestMatch = href
+      }
+    }
+  }
+
+  return bestMatch
+}
 
 const sections = [
   {
@@ -49,7 +71,7 @@ const sections = [
       { href: adminPath("lawyer/high-court"), label: "High Court", icon: Building2 },
       { href: adminPath("lawyer/supreme-court"), label: "Supreme Court", icon: Landmark },
       { href: adminPath("lawyer/cause-list"), label: "Cause List", icon: ListChecks },
-      { href: adminPath("lawyer/clients"), label: "All Clients", icon: Users },
+      { href: adminPath("lawyer/archive"), label: "Archive", icon: Archive },
       { href: adminPath("system/backup"), label: "Backup & Restore", icon: Database },
     ],
   },
@@ -84,7 +106,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               <ul className="mt-1 space-y-1">
                 {section.items.map((item) => {
                   const Icon = item.icon
-                  const active = pathname === item.href
+                  const activeHref = getActiveHref(pathname, section.items)
+                  const active = activeHref === normalizePath(item.href)
                   return (
                     <li key={item.href}>
                       <Link

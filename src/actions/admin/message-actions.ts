@@ -3,8 +3,10 @@
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { adminPath } from "@/lib/constants"
-import { requireAdmin } from "@/lib/session"
 import { requireAdminMutation } from "@/lib/admin-mutation"
+import { archiveContent } from "@/actions/admin/archive"
+import { CMS_TABLES } from "@/lib/cms-tables"
+import { auditLog } from "@/lib/audit"
 
 type MessageRow = {
   type: string
@@ -111,6 +113,25 @@ export async function markMessageAsRead(csrfToken: string, id: number, type: "ap
     await prisma.contactMessage.update({ where: { id }, data: { status: "read" } })
   }
   revalidatePath(adminPath("dashboard"))
+}
+
+export async function deleteMessage(csrfToken: string, id: number, type: "appointment" | "contact") {
+  const { ip } = await requireAdminMutation(csrfToken)
+  if (type === "appointment") {
+    const existing = await prisma.appointmentMessage.findUnique({ where: { id } })
+    if (!existing) throw new Error("Message not found")
+    await archiveContent(CMS_TABLES.AppointmentMessage, id, existing)
+    await prisma.appointmentMessage.delete({ where: { id } })
+    await auditLog("appointment_message_delete", `Archived and deleted appointment message ${id}`, ip)
+  } else {
+    const existing = await prisma.contactMessage.findUnique({ where: { id } })
+    if (!existing) throw new Error("Message not found")
+    await archiveContent(CMS_TABLES.ContactMessage, id, existing)
+    await prisma.contactMessage.delete({ where: { id } })
+    await auditLog("contact_message_delete", `Archived and deleted contact message ${id}`, ip)
+  }
+  revalidatePath(adminPath("dashboard"))
+  revalidatePath(adminPath("client-site/archive"))
 }
 
 export async function exportMessagesCSV(csrfToken: string): Promise<string> {

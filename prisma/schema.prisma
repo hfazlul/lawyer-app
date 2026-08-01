@@ -37,6 +37,10 @@ model SiteSetting {
   footerEmail     String?
   footerAddressEn String?
   footerAddressBn String?
+  themeNavy         String?
+  themeGold         String?
+  layoutFullWidth   Boolean @default(false)
+  layoutMargin      Int     @default(16)
 }
 
 model NavItem {
@@ -73,7 +77,8 @@ model HomeIntro {
   descriptionEn String
   descriptionBn String
   lawyerImage   String?
-  degreeImage   String?
+  degreeEn      String?
+  degreeBn      String?
   ctaTextEn     String?
   ctaTextBn     String?
   ctaLink       String?
@@ -121,34 +126,54 @@ model Testimonial {
 }
 
 model ServicePage {
-  id        Int      @id @default(autoincrement())
-  titleEn   String
-  titleBn   String
-  contentEn String
-  contentBn String
-  icon      String?
-  sortOrder Int
-  status    String   @default("active")
+  id               Int      @id @default(autoincrement())
+  titleEn          String
+  titleBn          String
+  contentEn        String
+  contentBn        String
+  icon             String?
+  bannerTitleEn    String?
+  bannerTitleBn    String?
+  bannerSubtitleEn String?
+  bannerSubtitleBn String?
+  sortOrder        Int
+  status           String   @default("active")
+}
+
+model ServicesSetting {
+  id               Int     @id @default(1)
+  bannerTitleEn    String
+  bannerTitleBn    String
+  bannerSubtitleEn String?
+  bannerSubtitleBn String?
 }
 
 model AppointmentSetting {
   id               Int    @id @default(1)
   bannerTitleEn    String
   bannerTitleBn    String
+  bannerSubtitleEn String?
+  bannerSubtitleBn String?
   officeHoursEn    String
   officeHoursBn    String
   mapImage         String?
+  mapQuery         String?
+  mapEmbedUrl      String?
   contactPhone     String?
   contactEmail     String?
 }
 
 model ContactSetting {
-  id            Int    @id @default(1)
-  bannerTitleEn String
-  bannerTitleBn String
-  officeHoursEn String
+  id               Int    @id @default(1)
+  bannerTitleEn    String
+  bannerTitleBn    String
+  bannerSubtitleEn String?
+  bannerSubtitleBn String?
+  officeHoursEn    String
   officeHoursBn String
   mapImage      String?
+  mapQuery      String?
+  mapEmbedUrl   String?
   phone         String?
   email         String?
   addressEn     String?
@@ -156,8 +181,12 @@ model ContactSetting {
 }
 
 model AboutPage {
-  id           Int    @id @default(1)
-  image        String?
+  id               Int    @id @default(1)
+  bannerTitleEn    String?
+  bannerTitleBn    String?
+  bannerSubtitleEn String?
+  bannerSubtitleBn String?
+  image            String?
   bioEn        String?
   bioBn        String?
   experienceEn String?

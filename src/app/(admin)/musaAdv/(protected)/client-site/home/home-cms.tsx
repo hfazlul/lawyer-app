@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,13 +10,14 @@ import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { BilingualInput } from "@/components/admin/bilingual-input"
 import { ImageUpload } from "@/components/admin/image-upload"
+import { HERO_SLIDE_IMAGE_SPECS } from "@/lib/hero-image"
+import { getCmsErrorMessage } from "@/lib/cms-helpers"
 import { CmsItemActions } from "@/components/admin/cms-item-actions"
 import {
   createHeroSlide, updateHeroSlide, toggleHeroSlideStatus, archiveHeroSlide, deleteHeroSlide,
 } from "@/actions/admin/hero-slides"
 import {
   updateHomeIntro,
-  createFeaturedService, updateFeaturedService, toggleFeaturedServiceStatus, archiveFeaturedService, deleteFeaturedService,
   createSuccessStat, updateSuccessStat, toggleSuccessStatStatus, archiveSuccessStat, deleteSuccessStat,
   createActivity, updateActivity, toggleActivityStatus, archiveActivity, deleteActivity,
   createTestimonial, updateTestimonial, toggleTestimonialStatus, archiveTestimonial, deleteTestimonial,
@@ -23,18 +25,18 @@ import {
 import { useCsrf } from "@/components/admin/csrf-provider"
 import { toast } from "sonner"
 import { Plus } from "lucide-react"
-import type { HeroSlide, HomeIntro, FeaturedService, SuccessStat, Activity, Testimonial } from "@prisma/client"
+import type { HeroSlide, HomeIntro, SuccessStat, Activity, Testimonial } from "@prisma/client"
+import { adminPath } from "@/lib/constants"
 
 interface HomeCmsProps {
   slides: HeroSlide[]
   intro: HomeIntro | null
-  featured: FeaturedService[]
   stats: SuccessStat[]
   activities: Activity[]
   testimonials: Testimonial[]
 }
 
-export function HomeCms({ slides, intro, featured, stats, activities, testimonials }: HomeCmsProps) {
+export function HomeCms({ slides, intro, stats, activities, testimonials }: HomeCmsProps) {
   const router = useRouter()
   const csrf = useCsrf()
   const [isPending, startTransition] = useTransition()
@@ -44,7 +46,8 @@ export function HomeCms({ slides, intro, featured, stats, activities, testimonia
     descriptionEn: intro?.descriptionEn ?? "",
     descriptionBn: intro?.descriptionBn ?? "",
     lawyerImage: intro?.lawyerImage ?? "",
-    degreeImage: intro?.degreeImage ?? "",
+    degreeEn: intro?.degreeEn ?? "",
+    degreeBn: intro?.degreeBn ?? "",
     ctaTextEn: intro?.ctaTextEn ?? "",
     ctaTextBn: intro?.ctaTextBn ?? "",
     ctaLink: intro?.ctaLink ?? "",
@@ -56,8 +59,8 @@ export function HomeCms({ slides, intro, featured, stats, activities, testimonia
         await updateHomeIntro(csrf, introForm)
         toast.success("Welcome section saved")
         router.refresh()
-      } catch {
-        toast.error("Save failed")
+      } catch (err) {
+        toast.error(getCmsErrorMessage(err))
       }
     })
   }
@@ -81,8 +84,8 @@ export function HomeCms({ slides, intro, featured, stats, activities, testimonia
         setEditingSlide(null)
         setSlideForm({})
         router.refresh()
-      } catch {
-        toast.error("Save failed")
+      } catch (err) {
+        toast.error(getCmsErrorMessage(err))
       }
     })
   }
@@ -92,7 +95,7 @@ export function HomeCms({ slides, intro, featured, stats, activities, testimonia
       <TabsList className="flex flex-wrap h-auto">
         <TabsTrigger value="hero">Hero Slides</TabsTrigger>
         <TabsTrigger value="intro">Welcome</TabsTrigger>
-        <TabsTrigger value="featured">Featured Services</TabsTrigger>
+        <TabsTrigger value="services">Services</TabsTrigger>
         <TabsTrigger value="stats">Success Stats</TabsTrigger>
         <TabsTrigger value="activities">Activities</TabsTrigger>
         <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
@@ -114,7 +117,13 @@ export function HomeCms({ slides, intro, featured, stats, activities, testimonia
               enValue={slideForm.descriptionEn ?? ""} bnValue={slideForm.descriptionBn ?? ""}
               onEnChange={(v) => setSlideForm((f) => ({ ...f, descriptionEn: v }))}
               onBnChange={(v) => setSlideForm((f) => ({ ...f, descriptionBn: v }))} multiline />
-            <ImageUpload label="Slide Image" value={slideForm.image ?? ""} onChange={(v) => setSlideForm((f) => ({ ...f, image: v }))} required />
+            <ImageUpload
+              label="Slide Image"
+              hint={HERO_SLIDE_IMAGE_SPECS.hint}
+              value={slideForm.image ?? ""}
+              onChange={(v) => setSlideForm((f) => ({ ...f, image: v }))}
+              required
+            />
             <BilingualInput label="CTA Text" enName="ctaTextEn" bnName="ctaTextBn"
               enValue={slideForm.ctaTextEn ?? ""} bnValue={slideForm.ctaTextBn ?? ""}
               onEnChange={(v) => setSlideForm((f) => ({ ...f, ctaTextEn: v }))}
@@ -178,7 +187,20 @@ export function HomeCms({ slides, intro, featured, stats, activities, testimonia
           onBnChange={(v) => setIntroForm((f) => ({ ...f, descriptionBn: v }))} multiline />
         <div className="grid gap-4 sm:grid-cols-2">
           <ImageUpload label="Lawyer Photo" value={introForm.lawyerImage} onChange={(v) => setIntroForm((f) => ({ ...f, lawyerImage: v }))} />
-          <ImageUpload label="Degree Image" value={introForm.degreeImage} onChange={(v) => setIntroForm((f) => ({ ...f, degreeImage: v }))} />
+          <div className="space-y-4">
+            <BilingualInput
+              label="Degree / Qualification"
+              enName="degreeEn"
+              bnName="degreeBn"
+              enValue={introForm.degreeEn}
+              bnValue={introForm.degreeBn}
+              onEnChange={(v) => setIntroForm((f) => ({ ...f, degreeEn: v }))}
+              onBnChange={(v) => setIntroForm((f) => ({ ...f, degreeBn: v }))}
+            />
+            <p className="text-xs text-muted-foreground">
+              Shown under the lawyer photo. No certificate image needed.
+            </p>
+          </div>
         </div>
         <BilingualInput label="CTA Text" enName="ctaTextEn" bnName="ctaTextBn"
           enValue={introForm.ctaTextEn} bnValue={introForm.ctaTextBn}
@@ -191,8 +213,20 @@ export function HomeCms({ slides, intro, featured, stats, activities, testimonia
         <Button onClick={saveIntro} disabled={isPending}>Save Welcome Section</Button>
       </TabsContent>
 
-      <TabsContent value="featured">
-        <FeaturedList items={featured} />
+      <TabsContent value="services" className="space-y-4">
+        <div className="rounded-lg border border-dashed bg-muted/20 px-4 py-6 text-sm text-muted-foreground">
+          <p className="font-medium text-foreground">Home and Services pages share the same service cards.</p>
+          <p className="mt-2">
+            Add or edit services in{" "}
+            <Link href={adminPath("client-site/services")} className="font-medium text-navy underline">
+              Services CMS
+            </Link>
+            . Updates appear on the home page service section and on <code>/services</code> automatically.
+          </p>
+          <Button className="mt-4" size="sm" asChild>
+            <Link href={adminPath("client-site/services")}>Open Services CMS</Link>
+          </Button>
+        </div>
       </TabsContent>
       <TabsContent value="stats">
         <StatsList items={stats} />
@@ -204,64 +238,6 @@ export function HomeCms({ slides, intro, featured, stats, activities, testimonia
         <TestimonialsList items={testimonials} />
       </TabsContent>
     </Tabs>
-  )
-}
-
-function FeaturedList({ items }: { items: FeaturedService[] }) {
-  const router = useRouter()
-  const csrf = useCsrf()
-  const [isPending, startTransition] = useTransition()
-  const [form, setForm] = useState<Record<string, string>>({})
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [showForm, setShowForm] = useState(false)
-
-  const save = () => {
-    startTransition(async () => {
-      try {
-        if (editingId) await updateFeaturedService(csrf, editingId, form)
-        else await createFeaturedService(csrf, form)
-        toast.success("Saved")
-        setShowForm(false); setEditingId(null); setForm({})
-        router.refresh()
-      } catch { toast.error("Save failed") }
-    })
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button size="sm" onClick={() => { setShowForm(true); setEditingId(null); setForm({}) }}><Plus className="mr-2 h-4 w-4" />Add</Button>
-      </div>
-      {(showForm || editingId) && (
-        <div className="rounded-lg border p-4 space-y-4">
-          <ImageUpload label="Icon" value={form.icon ?? ""} onChange={(v) => setForm((f) => ({ ...f, icon: v }))} />
-          <BilingualInput label="Title" enName="titleEn" bnName="titleBn" enValue={form.titleEn ?? ""} bnValue={form.titleBn ?? ""}
-            onEnChange={(v) => setForm((f) => ({ ...f, titleEn: v }))} onBnChange={(v) => setForm((f) => ({ ...f, titleBn: v }))} required />
-          <BilingualInput label="Description" enName="descriptionEn" bnName="descriptionBn" enValue={form.descriptionEn ?? ""} bnValue={form.descriptionBn ?? ""}
-            onEnChange={(v) => setForm((f) => ({ ...f, descriptionEn: v }))} onBnChange={(v) => setForm((f) => ({ ...f, descriptionBn: v }))} multiline />
-          <div className="space-y-2"><Label>Link to Service</Label><Input value={form.linkToService ?? ""} onChange={(e) => setForm((f) => ({ ...f, linkToService: e.target.value }))} /></div>
-          <div className="flex gap-2">
-            <Button size="sm" onClick={save} disabled={isPending}>{editingId ? "Update" : "Create"}</Button>
-            <Button size="sm" variant="outline" onClick={() => { setShowForm(false); setEditingId(null) }}>Cancel</Button>
-          </div>
-        </div>
-      )}
-      <Table>
-        <TableHeader><TableRow><TableHead>Title</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
-        <TableBody>
-          {items.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell>{item.titleEn}</TableCell>
-              <TableCell className="text-right">
-                <CmsItemActions id={item.id} status={item.status}
-                  onEdit={() => { setEditingId(item.id); setShowForm(true); setForm({ titleEn: item.titleEn, titleBn: item.titleBn, descriptionEn: item.descriptionEn, descriptionBn: item.descriptionBn, icon: item.icon ?? "", linkToService: item.linkToService ?? "" }) }}
-                  onToggleStatus={toggleFeaturedServiceStatus} onArchive={archiveFeaturedService} onDelete={deleteFeaturedService} />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
   )
 }
 
@@ -338,7 +314,13 @@ function ActivitiesList({ items }: { items: Activity[] }) {
       <div className="flex justify-end"><Button size="sm" onClick={() => { setShowForm(true); setEditingId(null); setForm({}) }}><Plus className="mr-2 h-4 w-4" />Add</Button></div>
       {(showForm || editingId) && (
         <div className="rounded-lg border p-4 space-y-4">
-          <ImageUpload label="Image" value={form.image ?? ""} onChange={(v) => setForm((f) => ({ ...f, image: v }))} required />
+          <ImageUpload
+            label="Image"
+            hint="Recommended: 1280 × 720 px (16:9 landscape). Portrait images show empty space on the sides in the slider."
+            value={form.image ?? ""}
+            onChange={(v) => setForm((f) => ({ ...f, image: v }))}
+            required
+          />
           <BilingualInput label="Title" enName="titleEn" bnName="titleBn" enValue={form.titleEn ?? ""} bnValue={form.titleBn ?? ""}
             onEnChange={(v) => setForm((f) => ({ ...f, titleEn: v }))} onBnChange={(v) => setForm((f) => ({ ...f, titleBn: v }))} required />
           <BilingualInput label="Caption" enName="captionEn" bnName="captionBn" enValue={form.captionEn ?? ""} bnValue={form.captionBn ?? ""}

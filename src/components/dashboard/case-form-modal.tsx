@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { DatePickerField } from "@/components/ui/date-picker-field"
+import { RichTextEditor } from "@/components/admin/rich-text-editor"
 import {
   Dialog,
   DialogContent,
@@ -79,6 +80,11 @@ export function CaseFormModal({
   const [form, setForm] = useState<CaseFormValues>(() =>
     editingCase ? caseToForm(editingCase) : emptyForm(defaultCourt)
   )
+
+  useEffect(() => {
+    if (!open) return
+    setForm(editingCase ? caseToForm(editingCase) : emptyForm(defaultCourt))
+  }, [open, editingCase, defaultCourt])
 
   const set = <K extends keyof CaseFormValues>(key: K, value: CaseFormValues[K]) =>
     setForm((f) => ({ ...f, [key]: value }))
@@ -190,30 +196,29 @@ export function CaseFormModal({
             </div>
             <div className="space-y-2">
               <Label htmlFor="previousDate">Previous Date</Label>
-              <Input
+              <DatePickerField
                 id="previousDate"
-                type="date"
                 value={form.previousDate}
-                onChange={(e) => set("previousDate", e.target.value)}
+                onChange={(value) => set("previousDate", value)}
+                placeholder="Select previous date"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="nextDate">Next Date</Label>
-              <Input
+              <DatePickerField
                 id="nextDate"
-                type="date"
                 value={form.nextDate}
-                onChange={(e) => set("nextDate", e.target.value)}
+                onChange={(value) => set("nextDate", value)}
+                placeholder="Select next date"
               />
             </div>
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="steps">Steps / Notes</Label>
-              <Textarea
-                id="steps"
-                rows={3}
+              <RichTextEditor
                 value={form.steps}
-                onChange={(e) => set("steps", e.target.value)}
+                onChange={(value) => set("steps", value)}
                 placeholder="Current case steps (auto-logged to history on save)"
+                minHeightClassName="min-h-[120px]"
               />
             </div>
           </div>

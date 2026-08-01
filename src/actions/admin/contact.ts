@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/session"
 import { requireAdminMutation } from "@/lib/admin-mutation"
 import { auditLog } from "@/lib/audit"
 import { contactSettingSchema } from "@/lib/validations/cms"
+import { sanitizeMapFields } from "@/lib/map-embed"
 import { archiveIfExists, revalidatePublicSite } from "@/lib/cms-helpers"
 import { CMS_TABLES } from "@/lib/cms-tables"
 
@@ -15,7 +16,7 @@ export async function getContactSettingsAdmin() {
 
 export async function updateContactSettings(csrfToken: string, data: unknown) {
   const { ip } = await requireAdminMutation(csrfToken)
-  const parsed = contactSettingSchema.parse(data)
+  const parsed = sanitizeMapFields(contactSettingSchema.parse(data))
   const existing = await prisma.contactSetting.findFirst()
   await archiveIfExists(CMS_TABLES.ContactSetting, existing)
   const result = await prisma.contactSetting.upsert({

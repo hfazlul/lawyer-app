@@ -2,13 +2,27 @@ import type { CourtType } from "@prisma/client"
 import { adminPath } from "@/lib/constants"
 
 export const CASE_REVALIDATE_PATHS = [
-  adminPath("lawyer/clients"),
+  adminPath("lawyer"),
   adminPath("lawyer/judge-court"),
   adminPath("lawyer/high-court"),
   adminPath("lawyer/supreme-court"),
   adminPath("lawyer/cause-list"),
+  adminPath("lawyer/archive"),
   adminPath("dashboard"),
 ] as const
+
+export function caseCourtListPath(court: string): string {
+  switch (court) {
+    case "JUDGE_COURT":
+      return adminPath("lawyer/judge-court")
+    case "HIGH_COURT":
+      return adminPath("lawyer/high-court")
+    case "SUPREME_COURT":
+      return adminPath("lawyer/supreme-court")
+    default:
+      return adminPath("lawyer")
+  }
+}
 
 export function formatCourtName(court: CourtType | string): string {
   return court
@@ -35,6 +49,16 @@ export function datesEqual(
   if (!a && !b) return true
   if (!a || !b) return false
   return a.getTime() === b.getTime()
+}
+
+export function stripHtmlTags(html: string): string {
+  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()
+}
+
+export const STEPS_HISTORY_PREFIX = "steps::"
+
+export function formatStepsHistoryAction(html: string) {
+  return `${STEPS_HISTORY_PREFIX}${html}`
 }
 
 export function getGDrivePreviewUrl(url: string): string | null {

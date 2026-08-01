@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/session"
 import { requireAdminMutation } from "@/lib/admin-mutation"
 import { auditLog } from "@/lib/audit"
 import { appointmentSettingSchema } from "@/lib/validations/cms"
+import { sanitizeMapFields } from "@/lib/map-embed"
 import { archiveIfExists, revalidatePublicSite } from "@/lib/cms-helpers"
 import { CMS_TABLES } from "@/lib/cms-tables"
 
@@ -15,7 +16,7 @@ export async function getAppointmentSettingsAdmin() {
 
 export async function updateAppointmentSettings(csrfToken: string, data: unknown) {
   const { ip } = await requireAdminMutation(csrfToken)
-  const parsed = appointmentSettingSchema.parse(data)
+  const parsed = sanitizeMapFields(appointmentSettingSchema.parse(data))
   const existing = await prisma.appointmentSetting.findFirst()
   await archiveIfExists(CMS_TABLES.AppointmentSetting, existing)
   const result = await prisma.appointmentSetting.upsert({

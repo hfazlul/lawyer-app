@@ -16,6 +16,8 @@ import type { Case, CaseHistory } from "@prisma/client"
 import { ExternalLink, History } from "lucide-react"
 import { formatCourtName, formatOnBehalf, getGDrivePreviewUrl } from "@/lib/case-helpers"
 import { formatAppDate, formatAppDateTime } from "@/lib/date-format"
+import { StepsHtmlContent } from "@/components/dashboard/steps-html-content"
+import { HistoryActionContent } from "@/components/dashboard/history-action-content"
 
 type CaseWithHistory = Case & { history?: CaseHistory[] }
 
@@ -83,7 +85,7 @@ export function CaseHistoryPanel({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+      <DialogContent className="max-h-[92vh] max-w-5xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <History className="h-5 w-5" />
@@ -113,15 +115,16 @@ export function CaseHistoryPanel({
               {formatAppDate(caseRecord.nextDate)}
             </p>
             {caseRecord.steps && (
-              <p className="sm:col-span-2">
-                <span className="text-muted-foreground">Steps:</span> {caseRecord.steps}
-              </p>
+              <div className="sm:col-span-2">
+                <p className="mb-1 text-muted-foreground">Steps:</p>
+                <StepsHtmlContent html={caseRecord.steps} />
+              </div>
             )}
           </div>
 
           {caseRecord.caseFileLink && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="font-medium">Case File</span>
                 <Button variant="outline" size="sm" asChild>
                   <a href={caseRecord.caseFileLink} target="_blank" rel="noopener noreferrer">
@@ -131,11 +134,14 @@ export function CaseHistoryPanel({
                 </Button>
               </div>
               {previewUrl && (
-                <iframe
-                  src={previewUrl}
-                  className="h-48 w-full rounded-md border"
-                  title="Case file preview"
-                />
+                <div className="overflow-hidden rounded-lg border bg-muted/30 shadow-inner">
+                  <iframe
+                    src={previewUrl}
+                    className="h-[min(420px,50vh)] min-h-[240px] w-full border-0 bg-white sm:min-h-[400px] sm:h-[min(560px,58vh)]"
+                    title="Case file preview"
+                    allow="autoplay"
+                  />
+                </div>
               )}
             </div>
           )}
@@ -155,14 +161,16 @@ export function CaseHistoryPanel({
             ) : history.length === 0 ? (
               <p className="text-muted-foreground">No history entries yet.</p>
             ) : (
-              <ol className="relative space-y-4 border-l pl-4">
+              <ol className="relative space-y-5 border-l-2 border-primary/20 pl-5">
                 {history.map((h) => (
                   <li key={h.id} className="relative">
-                    <span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-primary" />
-                    <p className="text-xs text-muted-foreground">
+                    <span className="absolute -left-[26px] top-1.5 h-3 w-3 rounded-full border-2 border-background bg-primary shadow-sm" />
+                    <p className="mb-1 text-xs text-muted-foreground">
                       {formatAppDateTime(h.date)}
                     </p>
-                    <p>{h.action}</p>
+                    <div className="rounded-md border border-border/60 bg-muted/20 p-3">
+                      <HistoryActionContent action={h.action} />
+                    </div>
                   </li>
                 ))}
               </ol>

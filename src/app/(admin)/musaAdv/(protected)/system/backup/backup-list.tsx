@@ -77,7 +77,7 @@ export function BackupList({ backups }: { backups: Backup[] }) {
     return (
       <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
         <p>No backups yet.</p>
-        <p className="mt-1 text-sm">Generate a manual backup to get started.</p>
+        <p className="mt-1 text-sm">Export a backup to get started.</p>
       </div>
     )
   }

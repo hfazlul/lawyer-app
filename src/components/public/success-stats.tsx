@@ -1,31 +1,57 @@
 "use client"
 
-import { useCounter } from "@/hooks/use-counter"
+import { motion } from "framer-motion"
+import { useCounter, useInView } from "@/hooks/use-counter"
 import { EmptyState } from "./empty-state"
 import type { SuccessStat } from "@prisma/client"
 import type { Language } from "@/types"
 import { t } from "@/lib/dictionary"
 
-function StatItem({ number, title, lang }: { number: number; title: { en: string; bn: string }; lang: Language }) {
-  const count = useCounter(number)
+function StatItem({
+  number,
+  title,
+  lang,
+  active,
+  delay,
+}: {
+  number: number
+  title: { en: string; bn: string }
+  lang: Language
+  active: boolean
+  delay: number
+}) {
+  const count = useCounter(number, 1600, active)
   return (
-    <div className="text-center">
-      <p className="font-serif text-4xl font-bold text-gold md:text-5xl">{count}+</p>
+    <motion.div
+      className="text-center"
+      initial={{ opacity: 0, y: 24 }}
+      animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+      transition={{ duration: 0.65, delay, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <p className="font-serif text-4xl font-bold tabular-nums text-gold md:text-5xl">
+        {count}+
+      </p>
       <p className="mt-2 text-sm font-medium text-white/80">{t(title, lang)}</p>
-    </div>
+    </motion.div>
   )
 }
 
 export function SuccessStats({ stats, lang }: { stats: SuccessStat[]; lang: Language }) {
+  const { ref, inView } = useInView<HTMLElement>(0.35)
+
   return (
-    <section className="bg-navy py-20 text-white">
-      <div className="container mx-auto px-4">
-        <div className="mb-12 text-center">
-          <div className="mx-auto mb-4 h-1 w-12 rounded-full bg-gold" />
+    <section ref={ref} className="public-section bg-navy text-white">
+      <div className="site-container">
+        <motion.div
+          className="mb-12 text-center"
+          initial={{ opacity: 0, y: 16 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        >
           <h2 className="font-serif text-3xl font-bold md:text-4xl">
             {lang === "bn" ? "আমাদের সাফল্য" : "Our Success"}
           </h2>
-        </div>
+        </motion.div>
         {stats.length === 0 ? (
           <EmptyState
             lang={lang}
@@ -34,12 +60,14 @@ export function SuccessStats({ stats, lang }: { stats: SuccessStat[]; lang: Lang
           />
         ) : (
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-            {stats.map((stat) => (
+            {stats.map((stat, i) => (
               <StatItem
                 key={stat.id}
                 number={stat.number}
                 title={{ en: stat.titleEn, bn: stat.titleBn }}
                 lang={lang}
+                active={inView}
+                delay={i * 0.08}
               />
             ))}
           </div>

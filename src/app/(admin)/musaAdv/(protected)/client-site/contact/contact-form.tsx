@@ -19,9 +19,13 @@ export function ContactForm({ data }: { data: ContactSetting | null }) {
   const [form, setForm] = useState({
     bannerTitleEn: data?.bannerTitleEn ?? "",
     bannerTitleBn: data?.bannerTitleBn ?? "",
+    bannerSubtitleEn: data?.bannerSubtitleEn ?? "",
+    bannerSubtitleBn: data?.bannerSubtitleBn ?? "",
     officeHoursEn: data?.officeHoursEn ?? "",
     officeHoursBn: data?.officeHoursBn ?? "",
     mapImage: data?.mapImage ?? "",
+    mapQuery: data?.mapQuery ?? "",
+    mapEmbedUrl: data?.mapEmbedUrl ?? "",
     phone: data?.phone ?? "",
     email: data?.email ?? "",
     addressEn: data?.addressEn ?? "",
@@ -47,11 +51,37 @@ export function ContactForm({ data }: { data: ContactSetting | null }) {
         enValue={form.bannerTitleEn} bnValue={form.bannerTitleBn}
         onEnChange={(v) => setForm((f) => ({ ...f, bannerTitleEn: v }))}
         onBnChange={(v) => setForm((f) => ({ ...f, bannerTitleBn: v }))} required />
+      <BilingualInput label="Banner Subtitle" enName="bannerSubtitleEn" bnName="bannerSubtitleBn"
+        enValue={form.bannerSubtitleEn} bnValue={form.bannerSubtitleBn}
+        onEnChange={(v) => setForm((f) => ({ ...f, bannerSubtitleEn: v }))}
+        onBnChange={(v) => setForm((f) => ({ ...f, bannerSubtitleBn: v }))} multiline />
       <BilingualInput label="Office Hours" enName="officeHoursEn" bnName="officeHoursBn"
         enValue={form.officeHoursEn} bnValue={form.officeHoursBn}
         onEnChange={(v) => setForm((f) => ({ ...f, officeHoursEn: v }))}
         onBnChange={(v) => setForm((f) => ({ ...f, officeHoursBn: v }))} multiline />
-      <ImageUpload label="Map Image" value={form.mapImage} onChange={(v) => setForm((f) => ({ ...f, mapImage: v }))} />
+      <ImageUpload label="Map Image (fallback)" value={form.mapImage} onChange={(v) => setForm((f) => ({ ...f, mapImage: v }))} />
+      <div className="space-y-2">
+        <Label>Map Location Query</Label>
+        <Input
+          value={form.mapQuery}
+          onChange={(e) => setForm((f) => ({ ...f, mapQuery: e.target.value }))}
+          placeholder="Address, coordinates, or Google Maps place link"
+        />
+        <p className="text-xs text-muted-foreground">
+          Address, coordinates, or a Google Maps place/share link.
+        </p>
+      </div>
+      <div className="space-y-2">
+        <Label>Google Maps Embed URL</Label>
+        <Input
+          value={form.mapEmbedUrl}
+          onChange={(e) => setForm((f) => ({ ...f, mapEmbedUrl: e.target.value }))}
+          placeholder="Paste embed src URL or full iframe code from Google Maps"
+        />
+        <p className="text-xs text-muted-foreground">
+          Google Maps → Share → Embed a map. You can paste the full iframe code or only the https://... URL.
+        </p>
+      </div>
       <BilingualInput label="Address" enName="addressEn" bnName="addressBn"
         enValue={form.addressEn ?? ""} bnValue={form.addressBn ?? ""}
         onEnChange={(v) => setForm((f) => ({ ...f, addressEn: v }))}

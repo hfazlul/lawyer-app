@@ -12,6 +12,14 @@ import { ImageUpload } from "@/components/admin/image-upload"
 import { updateSiteSettings } from "@/actions/admin/site-settings"
 import { useCsrf } from "@/components/admin/csrf-provider"
 import { toast } from "sonner"
+import {
+  DEFAULT_THEME_GOLD,
+  DEFAULT_THEME_NAVY,
+  THEME_PRESETS,
+  hexToHslComponents,
+  hslComponentsToHex,
+} from "@/lib/site-theme"
+import { DEFAULT_LAYOUT_MARGIN, MAX_LAYOUT_MARGIN, MIN_LAYOUT_MARGIN } from "@/lib/site-layout"
 import type { SiteSetting } from "@prisma/client"
 
 const empty: Partial<SiteSetting> = {
@@ -32,6 +40,10 @@ const empty: Partial<SiteSetting> = {
   footerEmail: "",
   footerAddressEn: "",
   footerAddressBn: "",
+  themeNavy: DEFAULT_THEME_NAVY,
+  themeGold: DEFAULT_THEME_GOLD,
+  layoutFullWidth: false,
+  layoutMargin: 16,
 }
 
 export function SiteSettingsForm({ settings }: { settings: SiteSetting | null }) {
@@ -40,7 +52,7 @@ export function SiteSettingsForm({ settings }: { settings: SiteSetting | null })
   const [isPending, startTransition] = useTransition()
   const [form, setForm] = useState({ ...empty, ...settings })
 
-  const set = (key: keyof typeof form, value: string | boolean) =>
+  const set = (key: keyof typeof form, value: string | boolean | number) =>
     setForm((f) => ({ ...f, [key]: value }))
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -73,6 +85,127 @@ export function SiteSettingsForm({ settings }: { settings: SiteSetting | null })
             enValue={form.siteNameEn ?? ""} bnValue={form.siteNameBn ?? ""}
             onEnChange={(v) => set("siteNameEn", v)} onBnChange={(v) => set("siteNameBn", v)}
           />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Theme Colors</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <p className="text-sm text-muted-foreground">
+            Each client site can use its own colors. Changes apply to the public website after save.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {THEME_PRESETS.map((preset) => (
+              <Button
+                key={preset.id}
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  set("themeNavy", preset.navy)
+                  set("themeGold", preset.gold)
+                }}
+              >
+                {preset.label}
+              </Button>
+            ))}
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Primary (Navy)</Label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={hslComponentsToHex(form.themeNavy ?? DEFAULT_THEME_NAVY)}
+                  onChange={(e) => set("themeNavy", hexToHslComponents(e.target.value))}
+                  className="h-10 w-14 cursor-pointer rounded border border-input bg-background p-1"
+                />
+                <Input
+                  value={form.themeNavy ?? ""}
+                  onChange={(e) => set("themeNavy", e.target.value)}
+                  placeholder={DEFAULT_THEME_NAVY}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Accent (Gold)</Label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={hslComponentsToHex(form.themeGold ?? DEFAULT_THEME_GOLD)}
+                  onChange={(e) => set("themeGold", hexToHslComponents(e.target.value))}
+                  className="h-10 w-14 cursor-pointer rounded border border-input bg-background p-1"
+                />
+                <Input
+                  value={form.themeGold ?? ""}
+                  onChange={(e) => set("themeGold", e.target.value)}
+                  placeholder={DEFAULT_THEME_GOLD}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="flex overflow-hidden rounded-lg border">
+            <div
+              className="flex flex-1 items-center justify-center py-8 text-sm font-medium text-white"
+              style={{ background: `hsl(${form.themeNavy ?? DEFAULT_THEME_NAVY})` }}
+            >
+              Header / Footer
+            </div>
+            <div
+              className="flex flex-1 items-center justify-center py-8 text-sm font-semibold"
+              style={{
+                background: `hsl(${form.themeGold ?? DEFAULT_THEME_GOLD})`,
+                color: `hsl(${form.themeNavy ?? DEFAULT_THEME_NAVY})`,
+              }}
+            >
+              Buttons / Accents
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Layout</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <p className="text-sm text-muted-foreground">
+            Boxed layout keeps rounded corners and side margins. Full width removes margins and corner radius.
+          </p>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <Label htmlFor="layoutFullWidth">Full width layout</Label>
+              <p className="text-xs text-muted-foreground">Edge-to-edge site with no side margin or rounded corners</p>
+            </div>
+            <Switch
+              id="layoutFullWidth"
+              checked={form.layoutFullWidth ?? false}
+              onCheckedChange={(v) => set("layoutFullWidth", v)}
+            />
+          </div>
+          {!form.layoutFullWidth && (
+            <div className="space-y-2">
+              <Label htmlFor="layoutMargin">
+                Side margin ({form.layoutMargin ?? DEFAULT_LAYOUT_MARGIN}px)
+              </Label>
+              <input
+                id="layoutMargin"
+                type="range"
+                min={MIN_LAYOUT_MARGIN}
+                max={MAX_LAYOUT_MARGIN}
+                step={4}
+                value={form.layoutMargin ?? DEFAULT_LAYOUT_MARGIN}
+                onChange={(e) => set("layoutMargin", Number(e.target.value))}
+                className="w-full accent-primary"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>{MIN_LAYOUT_MARGIN}px (wide)</span>
+                <span>{MAX_LAYOUT_MARGIN}px (narrow)</span>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

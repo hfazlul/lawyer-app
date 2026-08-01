@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { CmsImage } from "@/components/public/cms-image"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronLeft, ChevronRight } from "lucide-react"
@@ -9,13 +9,30 @@ import type { Activity } from "@prisma/client"
 import type { Language } from "@/types"
 import { t } from "@/lib/dictionary"
 
+const AUTO_INTERVAL_MS = 5000
+
 export function ActivitiesSlider({ activities, lang }: { activities: Activity[]; lang: Language }) {
   const [index, setIndex] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
+
+  const prev = useCallback(() => {
+    setIndex((i) => (i === 0 ? activities.length - 1 : i - 1))
+  }, [activities.length])
+
+  const next = useCallback(() => {
+    setIndex((i) => (i === activities.length - 1 ? 0 : i + 1))
+  }, [activities.length])
+
+  useEffect(() => {
+    if (activities.length <= 1 || isPaused) return
+    const timer = setInterval(next, AUTO_INTERVAL_MS)
+    return () => clearInterval(timer)
+  }, [activities.length, isPaused, next, index])
 
   if (activities.length === 0) {
     return (
-      <section className="py-20">
-        <div className="container mx-auto px-4">
+      <section className="public-section">
+        <div className="site-container">
           <EmptyState
             lang={lang}
             title={{ en: "Activities", bn: "কার্যক্রম" }}
@@ -30,34 +47,36 @@ export function ActivitiesSlider({ activities, lang }: { activities: Activity[];
   }
 
   const current = activities[index]
-  const prev = () => setIndex((i) => (i === 0 ? activities.length - 1 : i - 1))
-  const next = () => setIndex((i) => (i === activities.length - 1 ? 0 : i + 1))
 
   return (
-    <section className="py-20">
-      <div className="container mx-auto px-4">
+    <section
+      className="public-section"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      <div className="site-container">
         <div className="mb-12 text-center">
-          <div className="mx-auto mb-4 h-1 w-12 rounded-full bg-gold" />
           <h2 className="section-heading">
             {lang === "bn" ? "কার্যক্রম" : "Activities"}
           </h2>
         </div>
-        <div className="relative mx-auto max-w-4xl">
+        <div className="activities-slider-inner relative mx-auto max-w-4xl overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={`${current.id}-${current.image}`}
-              initial={{ opacity: 0, x: 24 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -24 }}
-              transition={{ duration: 0.4 }}
+              initial={{ opacity: 0, y: 56 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -56 }}
+              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
               className="text-center"
             >
-              <div className="relative mb-6 h-64 overflow-hidden rounded-lg shadow-lg md:h-80">
+              <div className="relative mb-6 aspect-[16/10] w-full overflow-hidden rounded-xl bg-muted shadow-lg md:aspect-video">
                 <CmsImage
                   src={current.image}
                   alt={t({ en: current.titleEn, bn: current.titleBn }, lang)}
                   fill
-                  className="object-cover"
+                  sizes="(max-width: 896px) 100vw, 896px"
+                  className="object-contain object-center"
                 />
               </div>
               <h3 className="font-serif text-xl font-semibold text-navy">

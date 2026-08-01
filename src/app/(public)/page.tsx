@@ -7,7 +7,7 @@ import { FeaturedServices } from "@/components/public/featured-services"
 import { SuccessStats } from "@/components/public/success-stats"
 import { ActivitiesSlider } from "@/components/public/activities-slider"
 import { Testimonials } from "@/components/public/testimonials"
-import { getHomeSections } from "@/actions/public/get-home-sections"
+import { getHomeSections, getServices } from "@/lib/public-data-cache"
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await getLangFromCookies()
@@ -15,12 +15,16 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [lang, data] = await Promise.all([getLangFromCookies(), getHomeSections()])
+  const [lang, data, servicePages] = await Promise.all([
+    getLangFromCookies(),
+    getHomeSections(),
+    getServices(),
+  ])
   return (
     <>
       <HeroSlider slides={data.heroSlides} lang={lang} />
       <WelcomeSection intro={data.intro} lang={lang} />
-      <FeaturedServices services={data.featuredServices} lang={lang} />
+      <FeaturedServices services={servicePages} lang={lang} />
       <SuccessStats stats={data.successStats} lang={lang} />
       <ActivitiesSlider activities={data.activities} lang={lang} />
       <Testimonials testimonials={data.testimonials} lang={lang} />

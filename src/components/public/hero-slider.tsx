@@ -1,11 +1,12 @@
 "use client"
 import { useState, useEffect, useCallback, useRef } from "react"
-import { CmsImage } from "@/components/public/cms-image"
+import Image from "next/image"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "./empty-state"
+import { getHeroImageSrc } from "@/lib/hero-image"
 import type { HeroSlide } from "@prisma/client"
 import type { Language } from "@/types"
 import { t } from "@/lib/dictionary"
@@ -99,7 +100,7 @@ export function HeroSlider({ slides, lang }: { slides: HeroSlide[]; lang: Langua
 
   return (
     <section
-      className="group relative h-[60vh] overflow-hidden bg-navy md:h-[75vh]"
+      className="group hero-section relative h-[60vh] overflow-hidden bg-navy md:h-[75vh]"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onFocusCapture={() => setIsPaused(true)}
@@ -116,22 +117,27 @@ export function HeroSlider({ slides, lang }: { slides: HeroSlide[]; lang: Langua
           animate="center"
           exit="exit"
           transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
-          className="absolute inset-0"
+          className="absolute inset-0 overflow-hidden"
         >
-          <CmsImage
-            src={current.image}
-            alt={t({ en: current.titleEn, bn: current.titleBn }, lang)}
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-navy/95 via-navy/70 to-navy/20" />
-          <div className="absolute inset-0 bg-gradient-to-t from-navy/60 via-transparent to-navy/20" />
+          <div className="relative h-full w-full">
+            <Image
+              src={getHeroImageSrc(current.image)}
+              alt={t({ en: current.titleEn, bn: current.titleBn }, lang)}
+              fill
+              sizes="100vw"
+              quality={90}
+              className="object-cover object-[center_30%] min-h-full min-w-full"
+              priority
+              unoptimized={current.image.startsWith("/uploads/")}
+            />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-r from-navy/75 via-navy/40 to-navy/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-navy/45 via-transparent to-navy/10" />
         </motion.div>
       </AnimatePresence>
 
-      <div className="absolute inset-0 z-[1] flex items-center">
-        <div className="container mx-auto px-4 text-white md:px-8">
+      <div className="absolute inset-0 z-[1] flex items-center justify-center">
+        <div className="site-chrome flex w-full justify-center">
           <AnimatePresence mode="wait">
             <motion.div
               key={current.id}
@@ -140,27 +146,33 @@ export function HeroSlider({ slides, lang }: { slides: HeroSlide[]; lang: Langua
               animate="center"
               exit="exit"
               transition={{ delay: 0.15, duration: 0.55, ease: [0.32, 0.72, 0, 1] }}
+              className="hero-copy"
             >
-              <div className="mb-5 flex items-center gap-3">
-                <div className="h-px w-12 bg-gold/80" />
-                <div className="h-1.5 w-1.5 rounded-full bg-gold" />
-              </div>
-              <h1 className="font-serif text-3xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
+              <h1 className="hero-title">
                 {t({ en: current.titleEn, bn: current.titleBn }, lang)}
               </h1>
-              <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/80 md:text-lg lg:text-xl">
-                {t({ en: current.descriptionEn, bn: current.descriptionBn }, lang)}
-              </p>
+              {(current.descriptionEn || current.descriptionBn) && (
+                <>
+                  <div className="hero-divider" aria-hidden="true">
+                    <span />
+                  </div>
+                  <p className="hero-description">
+                    {t({ en: current.descriptionEn, bn: current.descriptionBn }, lang)}
+                  </p>
+                </>
+              )}
               {current.ctaLink && (
+                <div className="mt-7 flex justify-center md:mt-8">
                 <Button
                   asChild
                   size="lg"
-                  className="mt-8 bg-gold px-8 font-semibold text-navy shadow-[0_4px_14px_hsl(var(--gold)/0.35)] transition-all hover:bg-gold/90 hover:shadow-[0_6px_20px_hsl(var(--gold)/0.4)]"
+                  className="rounded-lg bg-gold px-8 font-semibold text-navy shadow-[0_4px_14px_hsl(var(--gold)/0.35)] transition-all hover:bg-gold/90 hover:shadow-[0_6px_20px_hsl(var(--gold)/0.4)]"
                 >
                   <Link href={current.ctaLink}>
                     {t({ en: current.ctaTextEn || "Learn More", bn: current.ctaTextBn || "আরও জানুন" }, lang)}
                   </Link>
                 </Button>
+                </div>
               )}
             </motion.div>
           </AnimatePresence>
@@ -172,7 +184,7 @@ export function HeroSlider({ slides, lang }: { slides: HeroSlide[]; lang: Langua
           <button
             type="button"
             onClick={prev}
-            className="absolute left-4 top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/15 bg-navy/50 p-3 text-white opacity-80 shadow-lg backdrop-blur-md transition-all duration-300 hover:border-gold/40 hover:bg-navy/70 md:opacity-0 md:group-hover:opacity-100 md:left-6"
+            className="hero-nav-prev absolute top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/15 bg-navy/50 p-3 text-white opacity-80 shadow-lg backdrop-blur-md transition-all duration-300 hover:border-gold/40 hover:bg-navy/70 md:opacity-0 md:group-hover:opacity-100"
             aria-label="Previous slide"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -180,14 +192,14 @@ export function HeroSlider({ slides, lang }: { slides: HeroSlide[]; lang: Langua
           <button
             type="button"
             onClick={next}
-            className="absolute right-4 top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/15 bg-navy/50 p-3 text-white opacity-80 shadow-lg backdrop-blur-md transition-all duration-300 hover:border-gold/40 hover:bg-navy/70 md:opacity-0 md:group-hover:opacity-100 md:right-6"
+            className="hero-nav-next absolute top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/15 bg-navy/50 p-3 text-white opacity-80 shadow-lg backdrop-blur-md transition-all duration-300 hover:border-gold/40 hover:bg-navy/70 md:opacity-0 md:group-hover:opacity-100"
             aria-label="Next slide"
           >
             <ChevronRight className="h-5 w-5" />
           </button>
 
-          <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-navy/80 to-transparent px-4 pb-6 pt-12">
-            <div className="container mx-auto flex items-center justify-center gap-3">
+          <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-navy/80 to-transparent pb-6 pt-12">
+            <div className="site-chrome flex items-center justify-center gap-3">
               {slides.map((slide, i) => {
                 const active = i === index
                 return (

@@ -52,9 +52,9 @@ export function Header({ settings, lang }: HeaderProps) {
   )
 
   return (
-    <header className="relative rounded-t-xl border-b border-border/60 bg-background md:rounded-t-2xl">
-      <div className="container mx-auto flex flex-col gap-4 px-4 py-4 md:flex-row md:items-center">
-        <div className="flex w-full items-center justify-between md:w-1/2 md:justify-start">
+    <header className="relative rounded-t-[var(--site-wrapper-radius,1rem)] border-b border-border/60 bg-background">
+      <div className="site-chrome flex flex-col gap-4 py-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex w-full items-center justify-between md:w-auto md:justify-start">
           <Link href="/" className="group flex items-center gap-3 transition-opacity hover:opacity-90">
             {settings?.logo ? (
               <span className={logoFrameClass}>
@@ -86,7 +86,7 @@ export function Header({ settings, lang }: HeaderProps) {
             <SiteSearch enabled={settings?.searchEnabled !== false} mobile />
           </div>
         </div>
-        <div className="flex w-full items-center gap-3 md:w-1/2 md:justify-end">
+        <div className="flex w-full items-center gap-3 md:w-auto md:justify-end">
           <SiteSearch enabled={settings?.searchEnabled !== false} />
           <LanguageToggle />
           <div className="flex items-center gap-1.5">

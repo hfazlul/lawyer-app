@@ -1,26 +1,33 @@
 "use client"
 
 import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { CheckCircle2 } from "lucide-react"
+import { format, parseISO, startOfToday } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { Calendar } from "@/components/ui/calendar"
 import { appointmentFormSchema } from "@/lib/validations/messages"
 import { submitAppointment } from "@/actions/public/submit-appointment"
 import { toast } from "sonner"
 import { z } from "zod"
 import type { Language } from "@/types"
-import { cn } from "@/lib/utils"
 
 type FormData = z.infer<typeof appointmentFormSchema>
+
+function parsePreferredDate(value?: string) {
+  if (!value) return undefined
+  const parsed = parseISO(value)
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed
+}
 
 export function AppointmentForm({ lang }: { lang: Language }) {
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, reset, control, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(appointmentFormSchema),
   })
 
@@ -80,12 +87,28 @@ export function AppointmentForm({ lang }: { lang: Language }) {
         <Input id="serviceType" {...register("serviceType")} className="mt-1.5" />
       </div>
       <div>
-        <Label htmlFor="preferredDate">{lang === "bn" ? "পছন্দের তারিখ" : "Preferred Date"}</Label>
-        <Input
-          id="preferredDate"
-          type="date"
-          {...register("preferredDate")}
-          className={cn("mt-1.5 input-date", "scheme-light")}
+        <Label>{lang === "bn" ? "পছন্দের তারিখ" : "Preferred Date"}</Label>
+        <Controller
+          name="preferredDate"
+          control={control}
+          render={({ field }) => (
+            <div className="mt-1.5 rounded-lg border border-border/70 bg-card p-3 shadow-sm">
+              <Calendar
+                mode="single"
+                selected={parsePreferredDate(field.value)}
+                onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                disabled={(date) => date < startOfToday()}
+                initialFocus
+                className="mx-auto w-full max-w-none"
+              />
+              {field.value ? (
+                <p className="mt-3 border-t border-border/60 pt-3 text-center text-sm text-muted-foreground">
+                  {lang === "bn" ? "নির্বাচিত তারিখ:" : "Selected date:"}{" "}
+                  <span className="font-medium text-navy">{field.value}</span>
+                </p>
+              ) : null}
+            </div>
+          )}
         />
       </div>
       <div>

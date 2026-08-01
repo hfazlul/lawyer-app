@@ -4,6 +4,7 @@ export const PUBLIC_CACHE_TAGS = {
   homeSections: "public:home-sections",
   aboutPage: "public:about-page",
   services: "public:services",
+  servicesSetting: "public:services-setting",
   appointmentSetting: "public:appointment-setting",
   contactSetting: "public:contact-setting",
   homeIntro: "public:home-intro",

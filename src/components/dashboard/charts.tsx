@@ -18,7 +18,14 @@ import {
 } from "recharts"
 import { BarChart3 } from "lucide-react"
 
-const COLORS = ["hsl(220 55% 18%)", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"]
+const COLORS = [
+  "hsl(var(--primary))",
+  "#d97706", // Amber
+  "#10b981", // Emerald
+  "#6366f1", // Indigo
+  "#8b5cf6", // Purple
+  "#f43f5e", // Rose
+]
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
@@ -42,6 +49,46 @@ function ChartEmpty({ label }: { label: string }) {
 
 function formatCourtName(court: string): string {
   return court.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+const renderCourtLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
+  const RADIAN = Math.PI / 180
+  const radius = outerRadius + 22
+  const x = cx + radius * Math.cos(-midAngle * RADIAN)
+  const y = cy + radius * Math.sin(-midAngle * RADIAN)
+
+  return (
+    <text
+      x={x}
+      y={y}
+      fill="currentColor"
+      className="text-[11px] fill-muted-foreground font-medium"
+      textAnchor={x > cx ? "start" : "end"}
+      dominantBaseline="central"
+    >
+      {`${name} (${(percent * 100).toFixed(0)}%)`}
+    </text>
+  )
+}
+
+const renderSuccessLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, value, name }: any) => {
+  const RADIAN = Math.PI / 180
+  const radius = outerRadius + 18
+  const x = cx + radius * Math.cos(-midAngle * RADIAN)
+  const y = cy + radius * Math.sin(-midAngle * RADIAN)
+
+  return (
+    <text
+      x={x}
+      y={y}
+      fill="currentColor"
+      className="text-[11px] fill-muted-foreground font-medium"
+      textAnchor={x > cx ? "start" : "end"}
+      dominantBaseline="central"
+    >
+      {`${name}: ${value}`}
+    </text>
+  )
 }
 
 export function Charts({
@@ -76,27 +123,45 @@ export function Charts({
   const hasCourt = courtData.length > 0
   const hasSuccess = successData.length > 0
 
+  const themeTooltip = (
+    <Tooltip
+      contentStyle={{
+        borderRadius: "8px",
+        border: "1px solid hsl(var(--border))",
+        background: "hsl(var(--card))",
+        color: "hsl(var(--foreground))",
+      }}
+      itemStyle={{
+        color: "hsl(var(--foreground))",
+        fontSize: "12px",
+      }}
+      labelStyle={{
+        color: "hsl(var(--muted-foreground))",
+        fontSize: "12px",
+        fontWeight: 600,
+      }}
+    />
+  )
+
+  const legendFormatter = (value: string) => (
+    <span className="text-xs font-medium text-foreground">{value}</span>
+  )
+
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <Card>
+      <Card className="border border-border/80">
         <CardHeader>
-          <CardTitle className="text-base">Monthly Cases ({currentYear})</CardTitle>
+          <CardTitle className="text-base font-semibold">Monthly Cases ({currentYear})</CardTitle>
         </CardHeader>
         <CardContent className="h-72">
           {hasMonthly ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthlyData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-                <Tooltip
-                  contentStyle={{
-                    borderRadius: "8px",
-                    border: "1px solid hsl(var(--border))",
-                    background: "hsl(var(--card))",
-                  }}
-                />
-                <Bar dataKey="cases" fill="hsl(220 55% 18%)" radius={[4, 4, 0, 0]} />
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" stroke="hsl(var(--border))" />
+                <XAxis dataKey="name" stroke="hsl(var(--border))" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                <YAxis allowDecimals={false} stroke="hsl(var(--border))" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                {themeTooltip}
+                <Bar dataKey="cases" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -105,30 +170,24 @@ export function Charts({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border border-border/80">
         <CardHeader>
-          <CardTitle className="text-base">Yearly Trend</CardTitle>
+          <CardTitle className="text-base font-semibold">Yearly Trend</CardTitle>
         </CardHeader>
         <CardContent className="h-72">
           {hasYearly ? (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={yearlyData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-                <Tooltip
-                  contentStyle={{
-                    borderRadius: "8px",
-                    border: "1px solid hsl(var(--border))",
-                    background: "hsl(var(--card))",
-                  }}
-                />
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" stroke="hsl(var(--border))" />
+                <XAxis dataKey="name" stroke="hsl(var(--border))" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                <YAxis allowDecimals={false} stroke="hsl(var(--border))" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                {themeTooltip}
                 <Line
                   type="monotone"
                   dataKey="cases"
-                  stroke="hsl(43 74% 49%)"
+                  stroke="#d97706"
                   strokeWidth={2}
-                  dot={{ fill: "hsl(43 74% 49%)", r: 4 }}
+                  dot={{ fill: "#d97706", r: 4 }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -138,9 +197,9 @@ export function Charts({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border border-border/80">
         <CardHeader>
-          <CardTitle className="text-base">Court Distribution</CardTitle>
+          <CardTitle className="text-base font-semibold">Court Distribution</CardTitle>
         </CardHeader>
         <CardContent className="h-72">
           {hasCourt ? (
@@ -152,18 +211,16 @@ export function Charts({
                   nameKey="name"
                   cx="50%"
                   cy="45%"
-                  outerRadius={80}
-                  label={({ name, percent }) =>
-                    `${name} ${(percent * 100).toFixed(0)}%`
-                  }
-                  labelLine={false}
+                  outerRadius={75}
+                  label={renderCourtLabel}
+                  labelLine={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1 }}
                 >
                   {courtData.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
                 </Pie>
-                <Legend />
-                <Tooltip />
+                <Legend formatter={legendFormatter} />
+                {themeTooltip}
               </PieChart>
             </ResponsiveContainer>
           ) : (
@@ -172,9 +229,9 @@ export function Charts({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border border-border/80">
         <CardHeader>
-          <CardTitle className="text-base">Case Success Rate</CardTitle>
+          <CardTitle className="text-base font-semibold">Case Success Rate</CardTitle>
         </CardHeader>
         <CardContent className="h-72">
           {hasSuccess ? (
@@ -186,11 +243,12 @@ export function Charts({
                   nameKey="name"
                   cx="50%"
                   cy="45%"
-                  innerRadius={50}
-                  outerRadius={80}
-                  label={({ name, value }) => `${name}: ${value}`}
+                  innerRadius={45}
+                  outerRadius={75}
+                  label={renderSuccessLabel}
+                  labelLine={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1 }}
                 >
-                  {successData.map((entry, i) => (
+                  {successData.map((entry) => (
                     <Cell
                       key={entry.name}
                       fill={
@@ -198,13 +256,13 @@ export function Charts({
                           ? "#10b981"
                           : entry.name === "Failed"
                             ? "#ef4444"
-                            : COLORS[i % COLORS.length]
+                            : "#3b82f6"
                       }
                     />
                   ))}
                 </Pie>
-                <Legend />
-                <Tooltip />
+                <Legend formatter={legendFormatter} />
+                {themeTooltip}
               </PieChart>
             </ResponsiveContainer>
           ) : (

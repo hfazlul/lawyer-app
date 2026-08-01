@@ -5,7 +5,8 @@ import { getContactSetting } from "@/lib/public-data-cache"
 import { ContactForm } from "@/components/public/forms/contact-form"
 import { Card } from "@/components/ui/card"
 import { PageBanner } from "@/components/public/page-banner"
-import { CmsImage } from "@/components/public/cms-image"
+import { OfficeLocationSection } from "@/components/public/office-location-section"
+import { resolveBannerText } from "@/lib/page-banner"
 import { t } from "@/lib/dictionary"
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -16,21 +17,28 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ContactPage() {
   const [lang, settings] = await Promise.all([getLangFromCookies(), getContactSetting()])
 
+  const mapLabel = t(
+    { en: settings?.addressEn || "Our Office", bn: settings?.addressBn || "আমাদের অফিস" },
+    lang
+  )
+
+  const banner = resolveBannerText(
+    { en: settings?.bannerTitleEn, bn: settings?.bannerTitleBn },
+    { en: settings?.bannerSubtitleEn, bn: settings?.bannerSubtitleBn },
+    {
+      title: { en: "Contact Us", bn: "যোগাযোগ করুন" },
+      subtitle: {
+        en: "We are here to answer your questions",
+        bn: "আপনার প্রশ্নের উত্তর দিতে আমরা এখানে আছি",
+      },
+    }
+  )
+
   return (
     <>
-      <PageBanner
-        title={{
-          en: settings?.bannerTitleEn || "Contact Us",
-          bn: settings?.bannerTitleBn || "যোগাযোগ করুন",
-        }}
-        subtitle={{
-          en: "We are here to answer your questions",
-          bn: "আপনার প্রশ্নের উত্তর দিতে আমরা এখানে আছি",
-        }}
-        lang={lang}
-      />
+      <PageBanner title={banner.title} subtitle={banner.subtitle} lang={lang} />
       <section className="py-20">
-        <div className="container mx-auto px-4">
+        <div className="site-container">
           <div className="grid gap-12 md:grid-cols-2">
             <div>
               <h2 className="mb-6 font-serif text-2xl font-bold text-navy">
@@ -38,7 +46,7 @@ export default async function ContactPage() {
               </h2>
               <ContactForm lang={lang} />
             </div>
-            <div className="space-y-6">
+            <div>
               <Card className="p-6">
                 <h3 className="mb-3 font-semibold text-navy">
                   {lang === "bn" ? "ঠিকানা" : "Address"}
@@ -62,19 +70,18 @@ export default async function ContactPage() {
                   </p>
                 )}
               </Card>
-              {settings?.mapImage ? (
-                <div className="relative h-64 overflow-hidden rounded-lg shadow-md">
-                  <CmsImage src={settings.mapImage} alt="Map" fill className="object-cover" />
-                </div>
-              ) : (
-                <div className="flex h-48 items-center justify-center rounded-lg border border-dashed bg-muted/50 text-sm text-muted-foreground">
-                  {lang === "bn" ? "মানচিত্র শীঘ্রই" : "Map image coming soon"}
-                </div>
-              )}
             </div>
           </div>
         </div>
       </section>
+
+      <OfficeLocationSection
+        lang={lang}
+        mapEmbedUrl={settings?.mapEmbedUrl}
+        mapQuery={settings?.mapQuery}
+        mapImage={settings?.mapImage}
+        mapLabel={mapLabel}
+      />
     </>
   )
 }

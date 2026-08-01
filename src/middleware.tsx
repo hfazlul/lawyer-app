@@ -18,7 +18,7 @@ export default auth((req) => {
     if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     return NextResponse.next()
   }
-  if (path.startsWith("/api/upload") || path.startsWith("/api/archives")) {
+  if (path.startsWith("/api/upload") || path.startsWith("/api/archives") || path.startsWith("/api/cases")) {
     if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     return NextResponse.next()
   }
@@ -81,5 +81,6 @@ export const config = {
     "/api/backups/:path*",
     "/api/upload",
     "/api/archives/:path*",
+    "/api/cases/:path*",
   ],
 }

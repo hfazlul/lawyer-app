@@ -5,8 +5,9 @@ import { Navigation } from "@/components/public/navigation"
 import { Footer } from "@/components/public/footer"
 import { getSiteSettings, getNavItems } from "@/lib/public-data-cache"
 import { PublicPageSkeleton } from "@/components/public/public-page-skeleton"
-
-export const dynamic = "force-dynamic"
+import { SiteTheme } from "@/components/public/site-theme"
+import { SiteLayoutStyles } from "@/components/public/site-layout-styles"
+import { ScrollToTopButton } from "@/components/public/scroll-to-top-button"
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const [lang, settings, navItems] = await Promise.all([
@@ -16,7 +17,13 @@ export default async function PublicLayout({ children }: { children: React.React
   ])
 
   return (
-    <div className="site-shell">
+  <>
+    <SiteTheme themeNavy={settings?.themeNavy} themeGold={settings?.themeGold} />
+    <SiteLayoutStyles
+      layoutFullWidth={settings?.layoutFullWidth}
+      layoutMargin={settings?.layoutMargin}
+    />
+    <div className="site-shell" data-layout={settings?.layoutFullWidth ? "full" : "boxed"}>
       <div className="site-wrapper">
         <Header settings={settings} lang={lang} />
         <Navigation settings={settings} lang={lang} navItems={navItems} />
@@ -26,5 +33,7 @@ export default async function PublicLayout({ children }: { children: React.React
         <Footer settings={settings} lang={lang} />
       </div>
     </div>
+    <ScrollToTopButton />
+  </>
   )
 }
