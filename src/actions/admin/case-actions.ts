@@ -9,8 +9,9 @@ import { requireCauseListViewer } from "@/lib/session"
 import { deleteCaseRecord } from "@/lib/case-delete"
 import { caseSchema } from "@/lib/validations/case"
 import { CASE_REVALIDATE_PATHS, datesEqual, formatStepsHistoryAction } from "@/lib/case-helpers"
+import { isStaleActiveCase } from "@/lib/cause-list-filters"
 import type { CaseStatus } from "@/types"
-import type { z } from "zod"
+import { z } from "zod"
 
 type CaseInput = z.infer<typeof caseSchema>
 
@@ -138,6 +139,61 @@ export async function toggleCaseStatus(csrfToken: string, id: number, status: Ca
   await logHistory(id, `Status changed to ${status}`, status)
   await auditLog("case_status", `Case ${id} -> ${status}`, ip)
   revalidateCasePaths()
+}
+
+export async function reopenCase(
+  csrfToken: string,
+  id: number,
+  data: { nextDate: Date; steps: string }
+) {
+  const { ip } = await requireAdminMutation(csrfToken)
+  const parsed = z
+    .object({
+      nextDate: z.coerce.date(),
+      steps: z.string().min(1),
+    })
+    .parse(data)
+
+  const existing = await prisma.case.findUnique({ where: { id } })
+  if (!existing) throw new Error("Not found")
+
+  await prisma.case.update({
+    where: { id },
+    data: {
+      status: "active",
+      nextDate: parsed.nextDate,
+      steps: parsed.steps,
+    },
+  })
+
+  await logHistory(id, "Case re-opened (status: active)", "active")
+  await logHistory(
+    id,
+    `Next hearing changed to ${parsed.nextDate.toLocaleDateString()}`,
+    "active"
+  )
+  await logHistory(id, formatStepsHistoryAction(parsed.steps), "active")
+  await auditLog("case_reopen", `Re-opened case ${id}`, ip)
+  revalidateCasePaths()
+}
+
+/** Mark active cases with no today/future next hearing as completed. */
+export async function autoCompleteStaleActiveCases() {
+  const activeCases = await prisma.case.findMany({ where: { status: "active" } })
+  const stale = activeCases.filter((c) => isStaleActiveCase(c))
+  if (stale.length === 0) return { completed: 0 }
+
+  for (const c of stale) {
+    await prisma.case.update({ where: { id: c.id }, data: { status: "completed" } })
+    await logHistory(
+      c.id,
+      "Auto-completed — no upcoming hearing date (previous case)",
+      "completed"
+    )
+  }
+
+  revalidateCasePaths()
+  return { completed: stale.length }
 }
 
 export async function getCaseHistory(csrfToken: string | null, caseId: number, phoneFilter?: string) {

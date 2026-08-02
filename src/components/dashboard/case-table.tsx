@@ -4,6 +4,9 @@ import { useEffect, useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { DatePickerField } from "@/components/ui/date-picker-field"
+import { RichTextEditor } from "@/components/admin/rich-text-editor"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
@@ -18,6 +21,7 @@ import {
   createCase,
   updateCase,
   toggleCaseStatus,
+  reopenCase,
 } from "@/actions/admin/case-actions"
 import { CaseFormModal, type CaseFormValues } from "./case-form-modal"
 import { CaseHistoryPanel } from "./case-history-panel"
@@ -30,7 +34,7 @@ import { DEFAULT_TABLE_PAGE_SIZE, TablePagination } from "@/components/ui/table-
 import type { CaseStatus } from "@/types"
 import type { Case, CaseHistory, CourtType } from "@prisma/client"
 import { PhoneContact } from "@/components/dashboard/phone-contact"
-import { isDeactiveStatus } from "@/lib/cause-list-filters"
+import { isDeactiveStatus, isActiveStatus } from "@/lib/cause-list-filters"
 import { ExternalLink, History, Pencil, Plus, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -50,6 +54,8 @@ interface CaseTableProps {
   pageSize?: number
   /** Show every column on small screens (horizontal scroll). Used on cause list. */
   mobileFullColumns?: boolean
+  /** When set, table shows only that status bucket and hides the status filter dropdown. */
+  listMode?: "active" | "completed" | "deactive"
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -101,6 +107,7 @@ export function CaseTable({
   compact = false,
   pageSize = DEFAULT_TABLE_PAGE_SIZE,
   mobileFullColumns = false,
+  listMode,
 }: CaseTableProps) {
   const router = useRouter()
   const hideOnMobile = (classes: string) => (mobileFullColumns ? "" : classes)
@@ -113,6 +120,9 @@ export function CaseTable({
   const [editingCase, setEditingCase] = useState<CaseWithHistory | null>(null)
   const [historyCase, setHistoryCase] = useState<CaseWithHistory | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<CaseWithHistory | null>(null)
+  const [reopenTarget, setReopenTarget] = useState<CaseWithHistory | null>(null)
+  const [reopenNextDate, setReopenNextDate] = useState("")
+  const [reopenSteps, setReopenSteps] = useState("")
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -172,7 +182,16 @@ export function CaseTable({
   }
 
   const handleStatusChange = (c: CaseWithHistory, status: CaseStatus) => {
+    const currentStatus = isDeactiveStatus(c.status) ? "deactive" : c.status.toLowerCase()
     const nextStatus: CaseStatus = status === "deactive" ? "deactive" : status
+
+    if (nextStatus === "active" && !isActiveStatus(currentStatus)) {
+      setReopenNextDate("")
+      setReopenSteps(c.steps ?? "")
+      setReopenTarget(c)
+      return
+    }
+
     startTransition(async () => {
       try {
         await toggleCaseStatus(csrfToken, c.id, nextStatus)
@@ -180,6 +199,31 @@ export function CaseTable({
         router.refresh()
       } catch {
         toast.error("Could not update status")
+      }
+    })
+  }
+
+  const handleReopen = () => {
+    if (!reopenTarget || !reopenNextDate.trim()) {
+      toast.error("Next hearing date is required")
+      return
+    }
+    if (!reopenSteps.trim()) {
+      toast.error("Steps are required when re-opening a case")
+      return
+    }
+
+    startTransition(async () => {
+      try {
+        await reopenCase(csrfToken, reopenTarget.id, {
+          nextDate: new Date(reopenNextDate),
+          steps: reopenSteps,
+        })
+        toast.success("Case re-opened as Active")
+        setReopenTarget(null)
+        router.refresh()
+      } catch {
+        toast.error("Could not re-open case")
       }
     })
   }
@@ -227,16 +271,18 @@ export function CaseTable({
               className="w-full sm:w-64"
             />
           )}
-          <select
-            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as "all" | CaseStatus)}
-          >
-            <option value="all">All statuses</option>
-            <option value="active">Active</option>
-            <option value="completed">Completed</option>
-            <option value="deactive">Deactive</option>
-          </select>
+          {!listMode && (
+            <select
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as "all" | CaseStatus)}
+            >
+              <option value="all">All statuses</option>
+              <option value="active">Active</option>
+              <option value="completed">Completed</option>
+              <option value="deactive">Deactive</option>
+            </select>
+          )}
           {allowCreate && (
             <Button onClick={openCreate} size="sm">
               <Plus className="mr-1 h-4 w-4" />
@@ -425,6 +471,46 @@ export function CaseTable({
         onOpenChange={(open) => !open && setHistoryCase(null)}
         filterableByPhone={historyPhoneFilter}
       />
+
+      <Dialog open={!!reopenTarget} onOpenChange={(open) => !open && setReopenTarget(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Re-open case</DialogTitle>
+            <DialogDescription>
+              Set the next hearing date and steps to move{" "}
+              <strong>{reopenTarget?.caseNo}</strong> ({reopenTarget?.clientName}) back to Active.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="reopen-next-date">Next hearing date *</Label>
+              <DatePickerField
+                id="reopen-next-date"
+                value={reopenNextDate}
+                onChange={setReopenNextDate}
+                placeholder="Select next hearing date"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="reopen-steps">Steps / Notes *</Label>
+              <RichTextEditor
+                value={reopenSteps}
+                onChange={setReopenSteps}
+                placeholder="Current steps for this hearing"
+                minHeightClassName="min-h-[100px]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReopenTarget(null)} disabled={isPending}>
+              Cancel
+            </Button>
+            <Button onClick={handleReopen} disabled={isPending}>
+              {isPending ? "Saving…" : "Re-open as Active"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent>

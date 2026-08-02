@@ -17,23 +17,23 @@ export default async function PublicLayout({ children }: { children: React.React
   ])
 
   return (
-  <>
-    <SiteTheme themeNavy={settings?.themeNavy} themeGold={settings?.themeGold} />
-    <SiteLayoutStyles
-      layoutFullWidth={settings?.layoutFullWidth}
-      layoutMargin={settings?.layoutMargin}
-    />
-    <div className="site-shell" data-layout={settings?.layoutFullWidth ? "full" : "boxed"}>
-      <div className="site-wrapper">
-        <Header settings={settings} lang={lang} />
-        <Navigation settings={settings} lang={lang} navItems={navItems} />
-        <main className="flex-1">
-          <Suspense fallback={<PublicPageSkeleton />}>{children}</Suspense>
-        </main>
-        <Footer settings={settings} lang={lang} />
+    <>
+      <SiteTheme themeNavy={settings?.themeNavy} themeGold={settings?.themeGold} />
+      <SiteLayoutStyles
+        layoutFullWidth={settings?.layoutFullWidth}
+        layoutMargin={settings?.layoutMargin}
+      />
+      <div className="site-shell" data-layout={settings?.layoutFullWidth ? "full" : "boxed"}>
+        <div className="site-wrapper">
+          <Header settings={settings} lang={lang} />
+          <Navigation settings={settings} lang={lang} navItems={navItems} />
+          <main className="flex-1">
+            <Suspense fallback={<PublicPageSkeleton />}>{children}</Suspense>
+          </main>
+          <Footer settings={settings} lang={lang} />
+        </div>
       </div>
-    </div>
-    <ScrollToTopButton />
-  </>
+      <ScrollToTopButton />
+    </>
   )
 }
