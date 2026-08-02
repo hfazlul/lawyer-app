@@ -25,7 +25,7 @@ export const authConfig = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = "admin"
+        token.role = user.role ?? "admin"
         token.id = user.id
       }
       return token

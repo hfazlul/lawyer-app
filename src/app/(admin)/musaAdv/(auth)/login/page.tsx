@@ -43,7 +43,7 @@ export default function LoginPage() {
     const check = await fetch("/api/admin/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: data.email, password: data.password }),
+      body: JSON.stringify({ email: data.email, password: data.password, portal: "admin" }),
     })
     const checkBody = (await check.json().catch(() => ({}))) as { error?: string; reason?: string }
     if (!check.ok) {

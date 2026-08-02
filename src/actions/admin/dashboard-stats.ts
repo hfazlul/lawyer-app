@@ -10,7 +10,7 @@ export async function getDashboardStats() {
   const [
     total,
     solved,
-    failed,
+    deactive,
     pending,
     running,
     monthlyRaw,
@@ -19,7 +19,7 @@ export async function getDashboardStats() {
   ] = await Promise.all([
     prisma.case.count(),
     prisma.case.count({ where: { status: "completed" } }),
-    prisma.case.count({ where: { status: "failed" } }),
+    prisma.case.count({ where: { status: { in: ["deactive", "failed"] } } }),
     prisma.case.count({ where: { status: "active" } }),
     prisma.case.count({
       where: {
@@ -51,7 +51,7 @@ export async function getDashboardStats() {
   return {
     totalCases: total,
     solvedCases: solved,
-    failedCases: failed,
+    deactiveCases: deactive,
     pendingCases: pending,
     runningCasesThisWeek: running,
     monthlyCases: monthly,

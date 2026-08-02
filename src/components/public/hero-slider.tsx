@@ -31,7 +31,7 @@ const slideVariants = {
 const textVariants = {
   enter: {
     opacity: 0,
-    y: 28,
+    y: 12,
   },
   center: {
     opacity: 1,
@@ -39,7 +39,7 @@ const textVariants = {
   },
   exit: {
     opacity: 0,
-    y: -12,
+    y: -8,
   },
 }
 
@@ -82,7 +82,7 @@ export function HeroSlider({ slides, lang }: { slides: HeroSlide[]; lang: Langua
 
   if (slides.length === 0) {
     return (
-      <section className="relative flex h-[60vh] items-center justify-center bg-navy">
+      <section className="relative flex h-[clamp(210px,46.875vw,min(50vh,400px))] w-full items-center justify-center bg-navy sm:h-[48vh] md:h-[60vh]">
         <EmptyState
           lang={lang}
           title={{ en: "Welcome", bn: "স্বাগতম" }}
@@ -100,7 +100,7 @@ export function HeroSlider({ slides, lang }: { slides: HeroSlide[]; lang: Langua
 
   return (
     <section
-      className="group hero-section relative h-[60vh] overflow-hidden bg-navy md:h-[75vh]"
+      className="group hero-section relative h-[clamp(210px,46.875vw,min(50vh,400px))] w-full overflow-hidden bg-navy sm:h-[50vh] md:h-[75vh]"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onFocusCapture={() => setIsPaused(true)}
@@ -126,7 +126,7 @@ export function HeroSlider({ slides, lang }: { slides: HeroSlide[]; lang: Langua
               fill
               sizes="100vw"
               quality={90}
-              className="object-cover object-[center_30%] min-h-full min-w-full"
+              className="object-cover object-center sm:object-[center_30%]"
               priority
               unoptimized={current.image.startsWith("/uploads/")}
             />
@@ -136,7 +136,7 @@ export function HeroSlider({ slides, lang }: { slides: HeroSlide[]; lang: Langua
         </motion.div>
       </AnimatePresence>
 
-      <div className="absolute inset-0 z-[1] flex items-center justify-center">
+      <div className="absolute inset-0 z-[1] flex items-center justify-center px-1 py-1 pb-7 sm:px-0 sm:py-0 sm:pb-0">
         <div className="site-chrome flex w-full justify-center">
           <AnimatePresence mode="wait">
             <motion.div
@@ -145,28 +145,27 @@ export function HeroSlider({ slides, lang }: { slides: HeroSlide[]; lang: Langua
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ delay: 0.15, duration: 0.55, ease: [0.32, 0.72, 0, 1] }}
-              className="hero-copy"
+              transition={{ delay: 0.1, duration: 0.45, ease: [0.32, 0.72, 0, 1] }}
+              className="hero-copy max-h-full"
             >
-              <h1 className="hero-title">
+              <h1 className="hero-title line-clamp-2">
                 {t({ en: current.titleEn, bn: current.titleBn }, lang)}
               </h1>
               {(current.descriptionEn || current.descriptionBn) && (
                 <>
-                  <div className="hero-divider" aria-hidden="true">
+                  <div className="hero-divider hidden sm:flex" aria-hidden="true">
                     <span />
                   </div>
-                  <p className="hero-description">
+                  <p className="hero-description line-clamp-2 sm:line-clamp-none">
                     {t({ en: current.descriptionEn, bn: current.descriptionBn }, lang)}
                   </p>
                 </>
               )}
               {current.ctaLink && (
-                <div className="mt-7 flex justify-center md:mt-8">
+                <div className="mt-2 flex justify-center sm:mt-5 md:mt-8">
                 <Button
                   asChild
-                  size="lg"
-                  className="rounded-lg bg-gold px-8 font-semibold text-navy shadow-[0_4px_14px_hsl(var(--gold)/0.35)] transition-all hover:bg-gold/90 hover:shadow-[0_6px_20px_hsl(var(--gold)/0.4)]"
+                  className="h-7 rounded-md bg-gold px-3 text-[10px] font-semibold text-navy shadow-[0_2px_10px_hsl(var(--gold)/0.3)] transition-all hover:bg-gold/90 sm:h-9 sm:rounded-lg sm:px-5 sm:text-sm sm:shadow-[0_4px_14px_hsl(var(--gold)/0.35)] md:px-8 md:text-base"
                 >
                   <Link href={current.ctaLink}>
                     {t({ en: current.ctaTextEn || "Learn More", bn: current.ctaTextBn || "আরও জানুন" }, lang)}
@@ -184,21 +183,21 @@ export function HeroSlider({ slides, lang }: { slides: HeroSlide[]; lang: Langua
           <button
             type="button"
             onClick={prev}
-            className="hero-nav-prev absolute top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/15 bg-navy/50 p-3 text-white opacity-80 shadow-lg backdrop-blur-md transition-all duration-300 hover:border-gold/40 hover:bg-navy/70 md:opacity-0 md:group-hover:opacity-100"
+            className="hero-nav-prev absolute top-[58%] z-10 -translate-y-1/2 rounded-full border border-white/15 bg-navy/50 p-1.5 text-white opacity-80 shadow-lg backdrop-blur-md transition-all duration-300 hover:border-gold/40 hover:bg-navy/70 sm:top-1/2 sm:p-3 md:opacity-0 md:group-hover:opacity-100"
             aria-label="Previous slide"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
           </button>
           <button
             type="button"
             onClick={next}
-            className="hero-nav-next absolute top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/15 bg-navy/50 p-3 text-white opacity-80 shadow-lg backdrop-blur-md transition-all duration-300 hover:border-gold/40 hover:bg-navy/70 md:opacity-0 md:group-hover:opacity-100"
+            className="hero-nav-next absolute top-[58%] z-10 -translate-y-1/2 rounded-full border border-white/15 bg-navy/50 p-1.5 text-white opacity-80 shadow-lg backdrop-blur-md transition-all duration-300 hover:border-gold/40 hover:bg-navy/70 sm:top-1/2 sm:p-3 md:opacity-0 md:group-hover:opacity-100"
             aria-label="Next slide"
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
           </button>
 
-          <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-navy/80 to-transparent pb-6 pt-12">
+          <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-navy/80 to-transparent pb-4 pt-8 sm:pb-6 sm:pt-12">
             <div className="site-chrome flex items-center justify-center gap-3">
               {slides.map((slide, i) => {
                 const active = i === index

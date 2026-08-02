@@ -4,10 +4,17 @@ import { compare } from "bcryptjs"
 import { prisma } from "./prisma"
 import { loginSchema } from "./validations/auth"
 import { normalizeAdminEmail } from "./auth-helpers"
+import { dbRoleToSessionRole } from "./auth-roles"
 import { authConfig } from "./auth.config"
 import type { AdminRole } from "@/types"
 
-export async function verifyAdminCredentials(email: string, password: string) {
+export type AuthPortal = "admin" | "employee"
+
+export async function verifyAdminCredentials(
+  email: string,
+  password: string,
+  portal?: AuthPortal
+) {
   const parsed = loginSchema.safeParse({ email, password })
   if (!parsed.success) {
     return { ok: false as const, reason: "invalid_input" as const }
@@ -26,6 +33,15 @@ export async function verifyAdminCredentials(email: string, password: string) {
     return { ok: false as const, reason: "bad_password" as const }
   }
 
+  const role = dbRoleToSessionRole(admin.role)
+
+  if (portal === "admin" && role !== "admin") {
+    return { ok: false as const, reason: "not_found" as const }
+  }
+  if (portal === "employee" && role !== "employee") {
+    return { ok: false as const, reason: "not_found" as const }
+  }
+
   return {
     ok: true as const,
     admin: {
@@ -33,7 +49,7 @@ export async function verifyAdminCredentials(email: string, password: string) {
       name: admin.name,
       email: admin.email,
       phone: admin.phone,
-      role: "admin" as AdminRole,
+      role: role as AdminRole,
     },
   }
 }

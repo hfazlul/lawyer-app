@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache"
 import { adminPath } from "@/lib/constants"
 import { auditLog } from "@/lib/audit"
 import { requireAdminMutation } from "@/lib/admin-mutation"
+import { requireCauseListViewer } from "@/lib/session"
 import { deleteCaseRecord } from "@/lib/case-delete"
 import { caseSchema } from "@/lib/validations/case"
 import { CASE_REVALIDATE_PATHS, datesEqual, formatStepsHistoryAction } from "@/lib/case-helpers"
@@ -48,6 +49,7 @@ export async function createCase(csrfToken: string, data: unknown) {
       clientName: parsed.clientName,
       caseNo: parsed.caseNo,
       court: parsed.court,
+      courtType: parsed.courtType,
       caseType: parsed.caseType,
       onBehalf: parsed.onBehalf,
       contactNo: parsed.contactNo,
@@ -138,8 +140,9 @@ export async function toggleCaseStatus(csrfToken: string, id: number, status: Ca
   revalidateCasePaths()
 }
 
-export async function getCaseHistory(csrfToken: string, caseId: number, phoneFilter?: string) {
-  await requireAdminMutation(csrfToken)
+export async function getCaseHistory(csrfToken: string | null, caseId: number, phoneFilter?: string) {
+  await requireCauseListViewer()
+  void csrfToken
   const caseRecord = await prisma.case.findUnique({
     where: { id: caseId },
     include: {

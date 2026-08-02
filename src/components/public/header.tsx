@@ -15,7 +15,7 @@ interface HeaderProps {
 }
 
 const logoFrameClass =
-  "relative inline-flex h-14 w-14 shrink-0 overflow-hidden rounded-xl ring-1 ring-gold/25 shadow-[0_2px_10px_hsl(var(--navy)/0.14),0_0_16px_hsl(var(--gold)/0.1)] transition-shadow group-hover:shadow-[0_4px_14px_hsl(var(--navy)/0.18),0_0_20px_hsl(var(--gold)/0.14)]"
+  "relative inline-flex h-11 w-11 shrink-0 overflow-hidden rounded-lg ring-1 ring-gold/25 shadow-[0_2px_10px_hsl(var(--navy)/0.14),0_0_16px_hsl(var(--gold)/0.1)] transition-shadow group-hover:shadow-[0_4px_14px_hsl(var(--navy)/0.18),0_0_20px_hsl(var(--gold)/0.14)] sm:h-14 sm:w-14 sm:rounded-xl"
 
 const socialIconBaseClass =
   "inline-flex h-8 w-8 items-center justify-center rounded-lg shadow-sm transition-all duration-200"
@@ -53,9 +53,9 @@ export function Header({ settings, lang }: HeaderProps) {
 
   return (
     <header className="relative rounded-t-[var(--site-wrapper-radius,1rem)] border-b border-border/60 bg-background">
-      <div className="site-chrome flex flex-col gap-4 py-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex w-full items-center justify-between md:w-auto md:justify-start">
-          <Link href="/" className="group flex items-center gap-3 transition-opacity hover:opacity-90">
+      <div className="site-chrome flex flex-col gap-3 py-3 sm:gap-4 sm:py-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex w-full items-center justify-between gap-2 md:w-auto md:justify-start">
+          <Link href="/" className="group flex min-w-0 items-center gap-2 transition-opacity hover:opacity-90 sm:gap-3">
             {settings?.logo ? (
               <span className={logoFrameClass}>
                 <CmsImage
@@ -75,9 +75,11 @@ export function Header({ settings, lang }: HeaderProps) {
                 LF
               </span>
             )}
-            <div>
-              <span className="font-serif text-xl font-bold tracking-tight text-navy">{siteName}</span>
-              <p className="text-xs text-muted-foreground">
+            <div className="min-w-0">
+              <span className="line-clamp-2 font-serif text-sm font-bold leading-tight tracking-tight text-navy sm:text-lg md:text-xl">
+                {siteName}
+              </span>
+              <p className="text-[10px] text-muted-foreground sm:text-xs">
                 {lang === "bn" ? "প্রিমিয়াম আইনি সেবা" : "Premium Legal Services"}
               </p>
             </div>
@@ -88,7 +90,7 @@ export function Header({ settings, lang }: HeaderProps) {
         </div>
         <div className="flex w-full items-center gap-3 md:w-auto md:justify-end">
           <SiteSearch enabled={settings?.searchEnabled !== false} />
-          <LanguageToggle />
+          <LanguageToggle initialLang={lang} />
           <div className="flex items-center gap-1.5">
             {settings?.facebook && (
               <a href={settings.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className={getSocialIconClass("facebook")}>

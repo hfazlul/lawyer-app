@@ -1,5 +1,5 @@
 import type { CourtType } from "@prisma/client"
-import { adminPath } from "@/lib/constants"
+import { adminPath, employeePath } from "@/lib/constants"
 
 export const CASE_REVALIDATE_PATHS = [
   adminPath("lawyer"),
@@ -9,6 +9,7 @@ export const CASE_REVALIDATE_PATHS = [
   adminPath("lawyer/cause-list"),
   adminPath("lawyer/archive"),
   adminPath("dashboard"),
+  employeePath(),
 ] as const
 
 export function caseCourtListPath(court: string): string {

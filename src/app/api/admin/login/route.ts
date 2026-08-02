@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
-import { verifyAdminCredentials } from "@/lib/auth"
+import { verifyAdminCredentials, type AuthPortal } from "@/lib/auth"
 
 /** Pre-check credentials and return a clear reason (does not create a session). */
 export async function POST(req: Request) {
-  let body: { email?: string; password?: string }
+  let body: { email?: string; password?: string; portal?: AuthPortal }
   try {
     body = await req.json()
   } catch {
@@ -12,11 +12,12 @@ export async function POST(req: Request) {
 
   const email = body.email ?? ""
   const password = body.password ?? ""
+  const portal = body.portal === "employee" ? "employee" : "admin"
   if (!email || !password) {
     return NextResponse.json({ error: "Email and password are required" }, { status: 400 })
   }
 
-  const result = await verifyAdminCredentials(email, password)
+  const result = await verifyAdminCredentials(email, password, portal)
   if (!result.ok) {
     const messages = {
       invalid_input: "Invalid email or password format",

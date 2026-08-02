@@ -1,11 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Briefcase, CheckCircle2, XCircle, Clock, CalendarDays } from "lucide-react"
+import { Briefcase, CheckCircle2, PauseCircle, Clock, CalendarDays } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Stats {
   totalCases: number
   solvedCases: number
-  failedCases: number
+  deactiveCases: number
   pendingCases: number
   runningCasesThisWeek: number
 }
@@ -30,9 +30,9 @@ const CARD_CONFIG = [
     iconColor: "text-white",
   },
   {
-    title: "Failed",
-    key: "failedCases" as const,
-    icon: XCircle,
+    title: "Deactive",
+    key: "deactiveCases" as const,
+    icon: PauseCircle,
     gradient: "from-rose-500 via-red-500 to-red-700",
     glow: "shadow-red-500/25",
     iconBg: "bg-white/15",

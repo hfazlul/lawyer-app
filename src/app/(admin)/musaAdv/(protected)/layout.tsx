@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic"
 /** Auth is enforced in middleware; keep this layout sync so the shell persists across navigations. */
 export default function ProtectedAdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 flex overflow-hidden bg-background">
+    <div className="flex h-dvh overflow-hidden bg-background">
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header />

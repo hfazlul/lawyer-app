@@ -20,6 +20,7 @@ export interface CaseFormValues {
   clientName: string
   caseNo: string
   court: CourtType
+  courtType: string
   caseType: string
   onBehalf: OnBehalf
   contactNo: string
@@ -34,6 +35,7 @@ const emptyForm = (court: CourtType): CaseFormValues => ({
   clientName: "",
   caseNo: "",
   court,
+  courtType: "",
   caseType: "",
   onBehalf: "COMPLAINANT",
   contactNo: "",
@@ -49,6 +51,7 @@ function caseToForm(c: Case): CaseFormValues {
     clientName: c.clientName,
     caseNo: c.caseNo,
     court: c.court,
+    courtType: c.courtType ?? "",
     caseType: c.caseType,
     onBehalf: c.onBehalf,
     contactNo: c.contactNo,
@@ -139,6 +142,16 @@ export function CaseFormModal({
                 <option value="HIGH_COURT">{formatCourtName("HIGH_COURT")}</option>
                 <option value="SUPREME_COURT">{formatCourtName("SUPREME_COURT")}</option>
               </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="courtType">Court Type *</Label>
+              <Input
+                id="courtType"
+                value={form.courtType}
+                onChange={(e) => set("courtType", e.target.value)}
+                placeholder="e.g. Sessions Court, Magistrate Court"
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="caseType">Case Type *</Label>

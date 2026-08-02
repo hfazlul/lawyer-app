@@ -18,6 +18,8 @@ import { formatCourtName, formatOnBehalf, getGDrivePreviewUrl } from "@/lib/case
 import { formatAppDate, formatAppDateTime } from "@/lib/date-format"
 import { StepsHtmlContent } from "@/components/dashboard/steps-html-content"
 import { HistoryActionContent } from "@/components/dashboard/history-action-content"
+import { PhoneContact } from "@/components/dashboard/phone-contact"
+import { isDeactiveStatus } from "@/lib/cause-list-filters"
 
 type CaseWithHistory = Case & { history?: CaseHistory[] }
 
@@ -32,7 +34,7 @@ function StatusBadge({ status }: { status: string }) {
   const s = status.toLowerCase()
   if (s === "active") return <Badge variant="warning">Active</Badge>
   if (s === "completed") return <Badge variant="success">Completed</Badge>
-  if (s === "failed") return <Badge variant="destructive">Failed</Badge>
+  if (isDeactiveStatus(s)) return <Badge variant="destructive">Deactive</Badge>
   return <Badge variant="muted">{status}</Badge>
 }
 
@@ -49,7 +51,7 @@ export function CaseHistoryPanel({
   const [, startTransition] = useTransition()
 
   useEffect(() => {
-    if (!open || !caseRecord?.id || !csrf) {
+    if (!open || !caseRecord?.id) {
       if (!open) setHistory([])
       return
     }
@@ -60,7 +62,7 @@ export function CaseHistoryPanel({
     startTransition(async () => {
       try {
         const data = await getCaseHistory(
-          csrf,
+          csrf || null,
           caseRecord.id,
           filterableByPhone ? phoneFilter : undefined
         )
@@ -98,9 +100,13 @@ export function CaseHistoryPanel({
             <p><span className="text-muted-foreground">Serial:</span> {caseRecord.serial ?? "—"}</p>
             <p><span className="text-muted-foreground">Case No:</span> {caseRecord.caseNo}</p>
             <p><span className="text-muted-foreground">Court:</span> {formatCourtName(caseRecord.court)}</p>
+            <p><span className="text-muted-foreground">Court Type:</span> {caseRecord.courtType || "—"}</p>
             <p><span className="text-muted-foreground">Type:</span> {caseRecord.caseType}</p>
             <p><span className="text-muted-foreground">On Behalf:</span> {formatOnBehalf(caseRecord.onBehalf)}</p>
-            <p><span className="text-muted-foreground">Contact:</span> {caseRecord.contactNo}</p>
+            <p className="flex flex-wrap items-center gap-2">
+              <span className="text-muted-foreground">Contact:</span>
+              <PhoneContact phone={caseRecord.contactNo} />
+            </p>
             <p><span className="text-muted-foreground">Email:</span> {caseRecord.email || "—"}</p>
             <p className="flex items-center gap-2">
               <span className="text-muted-foreground">Status:</span>

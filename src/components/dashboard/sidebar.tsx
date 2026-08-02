@@ -1,6 +1,6 @@
 "use client"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   LayoutDashboard,
   Globe,
@@ -77,19 +77,34 @@ const sections = [
   },
 ]
 
-function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarContent({ isMobile = false }: { isMobile?: boolean }) {
   const pathname = usePathname()
+  const router = useRouter()
+  const { close } = useSidebar()
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     Dashboard: true,
     "Client Site": true,
     "Lawyer / Admin": true,
   })
 
+  const handleNavigate = (href: string) => {
+    const target = normalizePath(href)
+    const current = normalizePath(pathname)
+    if (current === target) {
+      close()
+      return
+    }
+    if (isMobile) {
+      router.push(href)
+      return
+    }
+  }
+
   return (
     <>
       <div className="flex h-16 shrink-0 items-center border-b px-4">
         <Globe className="mr-2 h-5 w-5 text-primary" />
-        <span className="font-semibold">Musa Admin</span>
+        <span className="font-semibold">Admin</span>
       </div>
       <nav className="flex-1 space-y-2 overflow-y-auto p-4">
         {sections.map((section) => (
@@ -112,7 +127,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                     <li key={item.href}>
                       <Link
                         href={item.href}
-                        onClick={onNavigate}
+                        onClick={(e) => {
+                          if (!isMobile) return
+                          e.preventDefault()
+                          handleNavigate(item.href)
+                        }}
                         className={cn(
                           "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
                           active ? "bg-primary text-primary-foreground" : "hover:bg-muted"
@@ -146,12 +165,12 @@ export function Sidebar() {
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/50 md:hidden"
+            className="fixed inset-0 z-[90] bg-black/50 md:hidden"
             onClick={close}
             aria-hidden
           />
-          <aside className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r bg-card md:hidden">
-            <SidebarContent onNavigate={close} />
+          <aside className="fixed inset-y-0 left-0 z-[100] flex w-64 flex-col border-r bg-card shadow-xl md:hidden">
+            <SidebarContent isMobile />
           </aside>
         </>
       )}

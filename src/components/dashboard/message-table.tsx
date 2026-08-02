@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Copy, Download, FileSpreadsheet, MessageSquare, Phone, Trash2 } from "lucide-react"
+import { Download, FileSpreadsheet, MessageSquare, Phone, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import {
   exportMessagesCSV,
@@ -19,6 +19,7 @@ import {
 import { useCsrf } from "@/components/admin/csrf-provider"
 import { formatAppDate } from "@/lib/date-format"
 import { DEFAULT_TABLE_PAGE_SIZE, TablePagination } from "@/components/ui/table-pagination"
+import { PhoneContact } from "@/components/dashboard/phone-contact"
 
 interface Message {
   id: number
@@ -88,11 +89,6 @@ export function MessageTable({ messages }: { messages: Message[] }) {
     const totalPages = Math.max(1, Math.ceil(filtered.length / DEFAULT_TABLE_PAGE_SIZE))
     if (page > totalPages - 1) setPage(Math.max(0, totalPages - 1))
   }, [filtered.length, page])
-
-  const copyPhone = (phone: string) => {
-    navigator.clipboard.writeText(phone)
-    toast.success("Phone number copied")
-  }
 
   const copyAllPhones = () => {
     const unique = Array.from(new Set(filtered.map((m) => m.phone)))
@@ -268,18 +264,7 @@ export function MessageTable({ messages }: { messages: Message[] }) {
                       </TableCell>
                       <TableCell className="font-medium">{m.name}</TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1">
-                          <span className="font-mono text-sm">{m.phone}</span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={() => copyPhone(m.phone)}
-                            aria-label="Copy phone"
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
-                        </div>
+                        <PhoneContact phone={m.phone} />
                       </TableCell>
                       <TableCell className="max-w-[200px] truncate" title={m.message ?? undefined}>
                         {m.message ?? "—"}

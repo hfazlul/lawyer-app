@@ -1,11 +1,11 @@
 ﻿import { prisma } from "./prisma"
-import { getAdminSession } from "./session"
+import { getSessionUser } from "./session"
 
 export async function auditLog(action: string, details?: string, ip?: string) {
-  const admin = await getAdminSession()
+  const user = await getSessionUser()
   await prisma.auditLog.create({
     data: {
-      adminId: admin?.id ?? "system",
+      adminId: user?.id ?? "system",
       action,
       details,
       ip,

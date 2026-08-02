@@ -28,6 +28,7 @@ export async function createAdminAccount(data: AdminSignupInput) {
       phone: data.phone.trim(),
       password: hashedPw,
       secretKey: hashedSecret,
+      role: "ADMIN",
     },
   })
 

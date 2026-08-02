@@ -23,6 +23,19 @@ export const AUTH_ROUTES = [
   adminPath("forgot-password"),
 ] as const
 
+export const EMPLOYEE_BASE = adminPath("emp")
+
+export const EMPLOYEE_AUTH_ROUTES = [
+  adminPath("emp/login"),
+  adminPath("emp/signup"),
+  adminPath("emp/signup-recovery"),
+  adminPath("emp/forgot-password"),
+] as const
+
+export function employeePath(...segments: string[]): string {
+  return adminPath("emp", ...segments)
+}
+
 export const DEFAULT_NAV_ITEMS = [
   { labelEn: "Home", labelBn: "হোম", href: "/", sortOrder: 1 },
   { labelEn: "Services", labelBn: "সেবাসমূহ", href: "/services", sortOrder: 2 },

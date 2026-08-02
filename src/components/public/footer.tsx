@@ -8,8 +8,8 @@ export function Footer({ settings, lang }: { settings: SiteSetting | null; lang:
   return (
     <footer className="mt-auto rounded-b-[var(--site-wrapper-radius,1rem)] border-t border-navy/20 bg-navy text-white/80">
       <div className="site-container py-14">
-        <div className="grid gap-10 md:grid-cols-[1fr_auto_1fr] md:items-start">
-          <div className="md:justify-self-start">
+        <div className="grid gap-10 md:grid-cols-[minmax(0,2.25fr)_minmax(0,11rem)_minmax(0,1.35fr)] md:items-start">
+          <div className="min-w-0 md:pr-4">
             <h3 className="font-serif text-lg font-semibold text-white">
               {t({ en: settings?.siteNameEn || "Law Firm", bn: settings?.siteNameBn || "আইন ফার্ম" }, lang)}
             </h3>
@@ -23,7 +23,7 @@ export function Footer({ settings, lang }: { settings: SiteSetting | null; lang:
               )}
             </p>
           </div>
-          <div className="md:justify-self-center">
+          <div className="min-w-0 max-w-[11rem]">
             <h4 className="mb-3 font-semibold text-gold">{lang === "bn" ? "যোগাযোগ" : "Contact"}</h4>
             {settings?.footerPhone && <p className="text-sm">{settings.footerPhone}</p>}
             {settings?.footerEmail && <p className="text-sm">{settings.footerEmail}</p>}

@@ -36,10 +36,10 @@ export function WelcomeSection({ intro, lang }: { intro: HomeIntro | null; lang:
   const degree = t({ en: intro.degreeEn || "", bn: intro.degreeBn || "" }, lang)
 
   return (
-    <section className="public-section w-full bg-muted/30">
+    <section className="w-full bg-muted/30 py-10 sm:py-14 md:py-24">
       <div className="site-container">
         <motion.h2
-          className="mb-8 font-serif text-3xl font-bold leading-snug tracking-tight text-navy md:text-4xl"
+          className="mb-4 font-serif text-xl font-bold leading-snug tracking-tight text-navy sm:mb-6 sm:text-2xl md:mb-8 md:text-4xl"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-60px" }}
@@ -48,7 +48,7 @@ export function WelcomeSection({ intro, lang }: { intro: HomeIntro | null; lang:
           {t({ en: intro.titleEn, bn: intro.titleBn }, lang)}
         </motion.h2>
 
-        <div className="grid items-start gap-8 md:grid-cols-[1fr_auto] md:gap-10 lg:gap-14">
+        <div className="grid items-start gap-5 sm:gap-8 md:grid-cols-[1fr_auto] md:gap-10 lg:gap-14">
           <motion.div
             className="min-w-0 space-y-5"
             initial="hidden"
@@ -56,7 +56,7 @@ export function WelcomeSection({ intro, lang }: { intro: HomeIntro | null; lang:
             viewport={{ once: true, margin: "-60px" }}
             variants={fadeUp}
           >
-            <p className="whitespace-pre-line text-justify text-base leading-7 text-muted-foreground [text-align-last:left] md:text-lg md:leading-8">
+            <p className="whitespace-pre-line text-justify text-sm leading-6 text-muted-foreground [text-align-last:left] sm:text-base sm:leading-7 md:text-lg md:leading-8">
               {t({ en: intro.descriptionEn, bn: intro.descriptionBn }, lang)}
             </p>
             {intro.ctaLink && (

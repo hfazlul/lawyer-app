@@ -7,15 +7,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum AdminAccountRole {
+  ADMIN
+  EMPLOYEE
+}
+
 model Admin {
-  id        String   @id @default(cuid())
+  id        String           @id @default(cuid())
   name      String
-  email     String   @unique
+  email     String           @unique
   phone     String
   password  String
   secretKey String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role      AdminAccountRole @default(ADMIN)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
 }
 
 model SiteSetting {
@@ -258,6 +264,7 @@ model Case {
   clientName   String
   caseNo       String
   court        CourtType
+  courtType    String   @default("")
   caseType     String
   onBehalf     OnBehalf
   contactNo    String

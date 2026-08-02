@@ -34,7 +34,7 @@ interface ChartsProps {
   yearlyCases: { year: number; count: number }[]
   courtDistribution: { court: string; _count: number }[]
   solved: number
-  failed: number
+  deactive: number
   pending: number
 }
 
@@ -96,7 +96,7 @@ export function Charts({
   yearlyCases,
   courtDistribution,
   solved,
-  failed,
+  deactive,
   pending,
 }: ChartsProps) {
   const monthlyData = monthlyCases.map((m) => ({
@@ -113,7 +113,7 @@ export function Charts({
   }))
   const successData = [
     { name: "Solved", value: solved },
-    { name: "Failed", value: failed },
+    { name: "Deactive", value: deactive },
     { name: "Pending", value: pending },
   ].filter((d) => d.value > 0)
 
@@ -254,7 +254,7 @@ export function Charts({
                       fill={
                         entry.name === "Solved"
                           ? "#10b981"
-                          : entry.name === "Failed"
+                          : entry.name === "Deactive"
                             ? "#ef4444"
                             : "#3b82f6"
                       }

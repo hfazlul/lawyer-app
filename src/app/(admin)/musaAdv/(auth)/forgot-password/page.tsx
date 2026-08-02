@@ -46,6 +46,7 @@ export default function ForgotPasswordPage() {
           secretKey: data.secretKey.trim(),
           newEmail: data.newEmail?.trim() || undefined,
           newPassword: data.newPassword || undefined,
+          portal: "admin",
         }),
       })
       const result = (await res.json().catch(() => ({}))) as {

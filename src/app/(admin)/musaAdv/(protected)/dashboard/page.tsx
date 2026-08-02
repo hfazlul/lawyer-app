@@ -58,7 +58,7 @@ export default async function DashboardPage() {
         yearlyCases={stats.yearlyCases}
         courtDistribution={stats.courtDistribution}
         solved={stats.solvedCases}
-        failed={stats.failedCases}
+        deactive={stats.deactiveCases}
         pending={stats.pendingCases}
       />
 

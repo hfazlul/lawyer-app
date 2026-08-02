@@ -42,7 +42,7 @@ export function Header() {
             ))}
           </ol>
         </nav>
-        <p className="truncate text-sm text-muted-foreground sm:hidden">Musa Admin</p>
+        <p className="truncate text-sm text-muted-foreground sm:hidden">Admin</p>
       </div>
       <div className="flex shrink-0 items-center gap-3">
         <div className="hidden text-right sm:block">

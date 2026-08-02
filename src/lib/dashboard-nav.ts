@@ -21,6 +21,7 @@ const ROUTE_LABELS: Record<string, string> = {
   "high-court": "High Court",
   "supreme-court": "Supreme Court",
   "cause-list": "Cause List",
+  emp: "Employee Portal",
   system: "System",
   backup: "Backup & Restore",
 }

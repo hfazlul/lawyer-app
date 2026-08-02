@@ -29,6 +29,8 @@ import { ClientNow } from "@/components/dashboard/client-now"
 import { DEFAULT_TABLE_PAGE_SIZE, TablePagination } from "@/components/ui/table-pagination"
 import type { CaseStatus } from "@/types"
 import type { Case, CaseHistory, CourtType } from "@prisma/client"
+import { PhoneContact } from "@/components/dashboard/phone-contact"
+import { isDeactiveStatus } from "@/lib/cause-list-filters"
 import { ExternalLink, History, Pencil, Plus, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -46,19 +48,21 @@ interface CaseTableProps {
   historyPhoneFilter?: boolean
   compact?: boolean
   pageSize?: number
+  /** Show every column on small screens (horizontal scroll). Used on cause list. */
+  mobileFullColumns?: boolean
 }
 
 function StatusBadge({ status }: { status: string }) {
   const s = status.toLowerCase()
   if (s === "active") return <Badge variant="warning">Active</Badge>
   if (s === "completed") return <Badge variant="success">Completed</Badge>
-  if (s === "failed") return <Badge variant="destructive">Failed</Badge>
+  if (isDeactiveStatus(s)) return <Badge variant="destructive">Deactive</Badge>
   return <Badge variant="muted">{status}</Badge>
 }
 
 function getCaseRowClassName(status: string) {
   const s = status.toLowerCase()
-  if (s === "failed") {
+  if (isDeactiveStatus(s)) {
     return "bg-red-50/90 hover:bg-red-100/80 border-l-4 border-l-red-400"
   }
   if (s === "completed") {
@@ -72,6 +76,7 @@ function formToPayload(values: CaseFormValues) {
     clientName: values.clientName,
     caseNo: values.caseNo,
     court: values.court,
+    courtType: values.courtType,
     caseType: values.caseType,
     onBehalf: values.onBehalf,
     contactNo: values.contactNo,
@@ -95,8 +100,10 @@ export function CaseTable({
   historyPhoneFilter = false,
   compact = false,
   pageSize = DEFAULT_TABLE_PAGE_SIZE,
+  mobileFullColumns = false,
 }: CaseTableProps) {
   const router = useRouter()
+  const hideOnMobile = (classes: string) => (mobileFullColumns ? "" : classes)
   const csrfToken = useCsrf()
   const [isPending, startTransition] = useTransition()
   const [search, setSearch] = useState("")
@@ -165,10 +172,11 @@ export function CaseTable({
   }
 
   const handleStatusChange = (c: CaseWithHistory, status: CaseStatus) => {
+    const nextStatus: CaseStatus = status === "deactive" ? "deactive" : status
     startTransition(async () => {
       try {
-        await toggleCaseStatus(csrfToken, c.id, status)
-        toast.success(`Status set to ${status}`)
+        await toggleCaseStatus(csrfToken, c.id, nextStatus)
+        toast.success(`Status set to ${nextStatus === "deactive" ? "Deactive" : nextStatus}`)
         router.refresh()
       } catch {
         toast.error("Could not update status")
@@ -196,13 +204,18 @@ export function CaseTable({
     })
   }
 
+  const showActionsColumn = !compact && (allowEdit || allowDelete)
+
   const columnCount =
-    8 +
+    9 +
     (showCourtColumn ? 1 : 0) +
-    (compact ? 1 : 6)
+    (compact ? 1 : 5 + (showActionsColumn ? 1 : 0))
 
   return (
     <div className="case-table space-y-4">
+      {title ? (
+        <h2 className="hidden text-xl font-semibold print:block">{title}</h2>
+      ) : null}
       <div className="no-print flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-semibold">{title}</h2>
         <div className="flex flex-wrap items-center gap-2">
@@ -222,7 +235,7 @@ export function CaseTable({
             <option value="all">All statuses</option>
             <option value="active">Active</option>
             <option value="completed">Completed</option>
-            <option value="failed">Failed</option>
+            <option value="deactive">Deactive</option>
           </select>
           {allowCreate && (
             <Button onClick={openCreate} size="sm">
@@ -241,24 +254,26 @@ export function CaseTable({
         <div className="table-scroll-hint text-center text-[10px] text-muted-foreground md:hidden">
           Swipe left/right to see all columns
         </div>
-        <Table>
+        <div className="overflow-x-auto">
+        <Table className={cn(mobileFullColumns && "min-w-max text-xs sm:text-sm")}>
           <TableHeader>
             <TableRow>
-              {!compact && <TableHead className="hidden w-12 sm:table-cell">#</TableHead>}
+              {!compact && <TableHead className={cn("w-12", hideOnMobile("hidden sm:table-cell"))}>#</TableHead>}
               <TableHead>Client</TableHead>
               <TableHead>Case No</TableHead>
-              {showCourtColumn && <TableHead className="hidden md:table-cell">Court</TableHead>}
-              <TableHead className="hidden sm:table-cell">Type</TableHead>
-              {!compact && <TableHead className="hidden lg:table-cell">On Behalf</TableHead>}
+              {showCourtColumn && <TableHead className={hideOnMobile("hidden md:table-cell")}>Court</TableHead>}
+              <TableHead className={hideOnMobile("hidden sm:table-cell")}>Court Type</TableHead>
+              <TableHead className={hideOnMobile("hidden sm:table-cell")}>Type</TableHead>
+              {!compact && <TableHead className={hideOnMobile("hidden lg:table-cell")}>On Behalf</TableHead>}
               <TableHead>Contact</TableHead>
-              {!compact && <TableHead className="hidden lg:table-cell">Email</TableHead>}
-              <TableHead className="hidden md:table-cell">Prev Date</TableHead>
+              {!compact && <TableHead className={hideOnMobile("hidden lg:table-cell")}>Email</TableHead>}
+              <TableHead className={hideOnMobile("hidden md:table-cell")}>Prev Date</TableHead>
               <TableHead>Next Date</TableHead>
-              {!compact && <TableHead className="hidden xl:table-cell">Steps</TableHead>}
+              {!compact && <TableHead className={hideOnMobile("hidden xl:table-cell")}>Steps</TableHead>}
               <TableHead>Status</TableHead>
-              <TableHead className="hidden sm:table-cell">File</TableHead>
+              <TableHead className={hideOnMobile("hidden sm:table-cell")}>File</TableHead>
               <TableHead className="no-print text-center">History</TableHead>
-              {!compact && <TableHead className="no-print text-right">Actions</TableHead>}
+              {showActionsColumn && <TableHead className="no-print text-right">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -272,24 +287,44 @@ export function CaseTable({
                 </TableCell>
               </TableRow>
             ) : (
-              paginated.map((c) => (
+              paginated.map((c, index) => (
                 <TableRow key={c.id} className={cn("transition-colors", getCaseRowClassName(c.status))}>
-                  {!compact && <TableCell className="hidden text-muted-foreground sm:table-cell">{c.serial ?? "—"}</TableCell>}
-                  <TableCell className="max-w-[120px] font-medium sm:max-w-none">{c.clientName}</TableCell>
+                  {!compact && (
+                    <TableCell className={cn("text-muted-foreground", hideOnMobile("hidden sm:table-cell"))}>
+                      {page * pageSize + index + 1}
+                    </TableCell>
+                  )}
+                  <TableCell className={cn("font-medium", mobileFullColumns ? "max-w-[140px]" : "max-w-[120px] sm:max-w-none")}>
+                    {c.clientName}
+                  </TableCell>
                   <TableCell className="whitespace-nowrap">{c.caseNo}</TableCell>
-                  {showCourtColumn && <TableCell className="hidden md:table-cell">{formatCourtName(c.court)}</TableCell>}
-                  <TableCell className="hidden sm:table-cell">{c.caseType}</TableCell>
-                  {!compact && <TableCell className="hidden lg:table-cell">{formatOnBehalf(c.onBehalf)}</TableCell>}
-                  <TableCell className="whitespace-nowrap">{c.contactNo}</TableCell>
-                  {!compact && <TableCell className="hidden max-w-[120px] truncate lg:table-cell">{c.email || "—"}</TableCell>}
-                  <TableCell className="hidden whitespace-nowrap md:table-cell">
+                  {showCourtColumn && (
+                    <TableCell className={hideOnMobile("hidden md:table-cell")}>{formatCourtName(c.court)}</TableCell>
+                  )}
+                  <TableCell className={hideOnMobile("hidden sm:table-cell")}>{c.courtType || "—"}</TableCell>
+                  <TableCell className={hideOnMobile("hidden sm:table-cell")}>{c.caseType}</TableCell>
+                  {!compact && (
+                    <TableCell className={hideOnMobile("hidden lg:table-cell")}>{formatOnBehalf(c.onBehalf)}</TableCell>
+                  )}
+                  <TableCell>
+                    <PhoneContact phone={c.contactNo} />
+                  </TableCell>
+                  {!compact && (
+                    <TableCell className={cn("max-w-[120px] truncate", hideOnMobile("hidden lg:table-cell"))}>
+                      {c.email || "—"}
+                    </TableCell>
+                  )}
+                  <TableCell className={cn("whitespace-nowrap", hideOnMobile("hidden md:table-cell"))}>
                     {formatAppDate(c.previousDate)}
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
                     {formatAppDate(c.nextDate)}
                   </TableCell>
                   {!compact && (
-                    <TableCell className="hidden max-w-[160px] truncate xl:table-cell" title={c.steps ? stripHtmlTags(c.steps) : undefined}>
+                    <TableCell
+                      className={cn("max-w-[160px] truncate", hideOnMobile("hidden xl:table-cell"))}
+                      title={c.steps ? stripHtmlTags(c.steps) : undefined}
+                    >
                       {c.steps ? stripHtmlTags(c.steps) : "—"}
                     </TableCell>
                   )}
@@ -297,19 +332,19 @@ export function CaseTable({
                     {allowEdit ? (
                       <select
                         className="h-8 rounded border border-input bg-background px-1 text-xs"
-                        value={c.status}
+                        value={isDeactiveStatus(c.status) ? "deactive" : c.status}
                         disabled={isPending}
                         onChange={(e) => handleStatusChange(c, e.target.value as CaseStatus)}
                       >
                         <option value="active">Active</option>
                         <option value="completed">Completed</option>
-                        <option value="failed">Failed</option>
+                        <option value="deactive">Deactive</option>
                       </select>
                     ) : (
                       <StatusBadge status={c.status} />
                     )}
                   </TableCell>
-                  <TableCell className="hidden sm:table-cell">
+                  <TableCell className={hideOnMobile("hidden sm:table-cell")}>
                     {c.caseFileLink ? (
                       <a
                         href={c.caseFileLink}
@@ -334,7 +369,7 @@ export function CaseTable({
                       <History className="h-4 w-4" />
                     </Button>
                   </TableCell>
-                  {!compact && (
+                  {showActionsColumn && (
                     <TableCell className="no-print text-right">
                       <div className="flex justify-end gap-1">
                         {allowEdit && (
@@ -365,6 +400,7 @@ export function CaseTable({
             )}
           </TableBody>
         </Table>
+        </div>
         <TablePagination
           page={page}
           pageSize={pageSize}

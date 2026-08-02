@@ -4,6 +4,7 @@ export const caseSchema = z.object({
   clientName: z.string().min(1),
   caseNo: z.string().min(1),
   court: z.enum(["JUDGE_COURT", "HIGH_COURT", "SUPREME_COURT"]),
+  courtType: z.string().min(1),
   caseType: z.string().min(1),
   onBehalf: z.enum(["COMPLAINANT", "ACCUSED"]),
   contactNo: z.string().min(1),

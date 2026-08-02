@@ -3,8 +3,8 @@ import { useRouter } from "next/navigation"
 import { useLanguage } from "@/hooks/use-language"
 import { Button } from "@/components/ui/button"
 
-export function LanguageToggle() {
-  const { lang, setLang } = useLanguage()
+export function LanguageToggle({ initialLang }: { initialLang?: "en" | "bn" }) {
+  const { lang, setLang } = useLanguage(initialLang)
   const router = useRouter()
 
   const switchLang = (next: "en" | "bn") => {

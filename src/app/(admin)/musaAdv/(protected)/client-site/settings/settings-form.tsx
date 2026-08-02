@@ -253,16 +253,18 @@ export function SiteSettingsForm({ settings }: { settings: SiteSetting | null })
             <Label htmlFor="search">Enable site search</Label>
             <Switch id="search" checked={form.searchEnabled ?? true} onCheckedChange={(v) => set("searchEnabled", v)} />
           </div>
-          <div className="space-y-2">
-            <Label>Default language</Label>
-            <select
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              value={form.defaultLanguage ?? "en"}
-              onChange={(e) => set("defaultLanguage", e.target.value)}
-            >
-              <option value="en">English</option>
-              <option value="bn">বাংলা</option>
-            </select>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <Label htmlFor="defaultBangla">Client site default বাংলা</Label>
+              <p className="text-xs text-muted-foreground">
+                Switch ON করে save করলে নতুন visitor client site-এ default বাংলা দেখবে
+              </p>
+            </div>
+            <Switch
+              id="defaultBangla"
+              checked={form.defaultLanguage === "bn"}
+              onCheckedChange={(checked) => set("defaultLanguage", checked ? "bn" : "en")}
+            />
           </div>
         </CardContent>
       </Card>

@@ -1,12 +1,11 @@
 import { auth } from "@/lib/auth"
 import { getOrSetCsrfToken } from "@/lib/csrf"
 import { NextResponse } from "next/server"
-import type { AdminSessionUser } from "@/types"
+import { getCauseListSession } from "@/lib/session"
 
 export async function GET() {
-  const session = await auth()
-  const user = session?.user as AdminSessionUser | undefined
-  if (!user || user.role !== "admin") {
+  const user = await getCauseListSession()
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 

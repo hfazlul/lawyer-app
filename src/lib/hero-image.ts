@@ -3,7 +3,7 @@ export const HERO_SLIDE_IMAGE_SPECS = {
   width: 1920,
   height: 900,
   hint:
-    "Recommended: 1920 × 900 px (landscape). The slider is full screen width and 60–85vh tall; images use object-cover, so keep the main subject near the center.",
+    "Recommended: 1920 × 900 px (landscape). On mobile the slider uses this aspect ratio at full width; on larger screens it fills 50–75vh with object-cover — keep the main subject near the center.",
 } as const
 
 export function getHeroImageSrc(src: string): string {
