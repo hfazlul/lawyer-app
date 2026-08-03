@@ -32,9 +32,11 @@ export function isRunningActiveCase(caseRecord: Case, refDate: Date = new Date()
   return hasUpcomingOrTodayHearing(caseRecord, refDate)
 }
 
-/** Active in DB but hearing date passed or missing — should be completed. */
+/** Active in DB with a past next hearing — should be completed. Missing date stays open. */
 export function isStaleActiveCase(caseRecord: Case, refDate: Date = new Date()): boolean {
-  return isActiveStatus(caseRecord.status) && !hasUpcomingOrTodayHearing(caseRecord, refDate)
+  if (!isActiveStatus(caseRecord.status)) return false
+  if (!caseRecord.nextDate) return false
+  return !hasUpcomingOrTodayHearing(caseRecord, refDate)
 }
 
 /** Completed tab: marked completed or stale active (previous cases without upcoming hearing). */

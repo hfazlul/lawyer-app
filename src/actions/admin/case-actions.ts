@@ -40,7 +40,15 @@ async function logHistory(caseId: number, action: string, status: string) {
 
 export async function createCase(csrfToken: string, data: unknown) {
   const { ip } = await requireAdminMutation(csrfToken)
-  const parsed = normalizeOptionalFields(caseSchema.parse(data))
+  const result = caseSchema.safeParse(data)
+  if (!result.success) {
+    const message =
+      result.error.issues.find((issue) => issue.path[0] === "courtType")?.message ??
+      result.error.issues[0]?.message ??
+      "Invalid case data"
+    throw new Error(message)
+  }
+  const parsed = normalizeOptionalFields(result.data)
   const maxSerial = await prisma.case.aggregate({ _max: { serial: true } })
   const serial = (maxSerial._max.serial ?? 0) + 1
 

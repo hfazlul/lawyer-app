@@ -67,6 +67,7 @@ interface CaseFormModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   defaultCourt: CourtType
+  lockCourt?: boolean
   editingCase?: Case | null
   onSubmit: (values: CaseFormValues) => Promise<void>
   isPending: boolean
@@ -76,6 +77,7 @@ export function CaseFormModal({
   open,
   onOpenChange,
   defaultCourt,
+  lockCourt = false,
   editingCase,
   onSubmit,
   isPending,
@@ -86,21 +88,32 @@ export function CaseFormModal({
 
   useEffect(() => {
     if (!open) return
-    setForm(editingCase ? caseToForm(editingCase) : emptyForm(defaultCourt))
-  }, [open, editingCase, defaultCourt])
+    const base = {
+      ...emptyForm(defaultCourt),
+      ...(editingCase ? caseToForm(editingCase) : {}),
+    }
+    setForm(lockCourt ? { ...base, court: defaultCourt } : base)
+  }, [open, editingCase, defaultCourt, lockCourt])
 
   const set = <K extends keyof CaseFormValues>(key: K, value: CaseFormValues[K]) =>
     setForm((f) => ({ ...f, [key]: value }))
 
   const handleOpen = (next: boolean) => {
     if (next) {
-      setForm(editingCase ? caseToForm(editingCase) : emptyForm(defaultCourt))
+      const base = {
+        ...emptyForm(defaultCourt),
+        ...(editingCase ? caseToForm(editingCase) : {}),
+      }
+      setForm(lockCourt ? { ...base, court: defaultCourt } : base)
     }
     onOpenChange(next)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!form.courtType.trim()) {
+      return
+    }
     await onSubmit(form)
   }
 
@@ -134,9 +147,10 @@ export function CaseFormModal({
               <Label htmlFor="court">Court *</Label>
               <select
                 id="court"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
                 value={form.court}
                 onChange={(e) => set("court", e.target.value as CourtType)}
+                disabled={lockCourt}
               >
                 <option value="JUDGE_COURT">{formatCourtName("JUDGE_COURT")}</option>
                 <option value="HIGH_COURT">{formatCourtName("HIGH_COURT")}</option>

@@ -27,7 +27,7 @@ import { CaseFormModal, type CaseFormValues } from "./case-form-modal"
 import { CaseHistoryPanel } from "./case-history-panel"
 import { useCsrf } from "@/components/admin/csrf-provider"
 import { formatCourtName, formatOnBehalf, stripHtmlTags } from "@/lib/case-helpers"
-import { formatAppDate } from "@/lib/date-format"
+import { formatAppDate, toAppDateKey } from "@/lib/date-format"
 import { cn } from "@/lib/utils"
 import { ClientNow } from "@/components/dashboard/client-now"
 import { DEFAULT_TABLE_PAGE_SIZE, TablePagination } from "@/components/ui/table-pagination"
@@ -56,6 +56,8 @@ interface CaseTableProps {
   mobileFullColumns?: boolean
   /** When set, table shows only that status bucket and hides the status filter dropdown. */
   listMode?: "active" | "completed" | "deactive"
+  /** Lock the court field to defaultCourt (used on court-specific pages/tabs). */
+  lockCourt?: boolean
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -82,7 +84,7 @@ function formToPayload(values: CaseFormValues) {
     clientName: values.clientName,
     caseNo: values.caseNo,
     court: values.court,
-    courtType: values.courtType,
+    courtType: values.courtType?.trim() ?? "",
     caseType: values.caseType,
     onBehalf: values.onBehalf,
     contactNo: values.contactNo,
@@ -108,11 +110,13 @@ export function CaseTable({
   pageSize = DEFAULT_TABLE_PAGE_SIZE,
   mobileFullColumns = false,
   listMode,
+  lockCourt = false,
 }: CaseTableProps) {
   const router = useRouter()
   const hideOnMobile = (classes: string) => (mobileFullColumns ? "" : classes)
   const csrfToken = useCsrf()
   const [isPending, startTransition] = useTransition()
+  const [tableCases, setTableCases] = useState(cases)
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<"all" | CaseStatus>("all")
   const [page, setPage] = useState(0)
@@ -124,9 +128,13 @@ export function CaseTable({
   const [reopenNextDate, setReopenNextDate] = useState("")
   const [reopenSteps, setReopenSteps] = useState("")
 
+  useEffect(() => {
+    setTableCases(cases)
+  }, [cases])
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
-    return cases.filter((c) => {
+    return tableCases.filter((c) => {
       if (statusFilter !== "all" && c.status !== statusFilter) return false
       if (!q) return true
       return (
@@ -136,7 +144,7 @@ export function CaseTable({
         (c.email?.toLowerCase().includes(q) ?? false)
       )
     })
-  }, [cases, search, statusFilter])
+  }, [tableCases, search, statusFilter])
 
   useEffect(() => {
     setPage(0)
@@ -163,20 +171,45 @@ export function CaseTable({
   }
 
   const handleSubmit = async (values: CaseFormValues) => {
+    if (!values.courtType?.trim()) {
+      toast.error("Court type is required")
+      return
+    }
+
+    if (values.nextDate) {
+      const nextKey = toAppDateKey(values.nextDate)
+      const todayKey = toAppDateKey(new Date())
+      if (nextKey < todayKey) {
+        toast.error("Next hearing date cannot be in the past")
+        return
+      }
+    }
+
+    const submitValues = lockCourt ? { ...values, court: defaultCourt } : values
+
     startTransition(async () => {
       try {
-        const payload = formToPayload(values)
+        const payload = formToPayload(submitValues)
         if (editingCase) {
-          await updateCase(csrfToken, editingCase.id, payload)
+          const updated = await updateCase(csrfToken, editingCase.id, payload)
+          setTableCases((prev) =>
+            prev.map((c) => (c.id === updated.id ? { ...c, ...updated } : c))
+          )
           toast.success("Case updated")
         } else {
-          await createCase(csrfToken, payload)
+          const created = await createCase(csrfToken, payload)
+          setTableCases((prev) => [
+            created as CaseWithHistory,
+            ...prev.filter((c) => c.id !== created.id),
+          ])
           toast.success("Case created")
         }
+        setPage(0)
+        setSearch("")
         setFormOpen(false)
         router.refresh()
-      } catch {
-        toast.error("Could not save case")
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Could not save case")
       }
     })
   }
@@ -460,6 +493,7 @@ export function CaseTable({
         open={formOpen}
         onOpenChange={setFormOpen}
         defaultCourt={defaultCourt}
+        lockCourt={lockCourt}
         editingCase={editingCase}
         onSubmit={handleSubmit}
         isPending={isPending}

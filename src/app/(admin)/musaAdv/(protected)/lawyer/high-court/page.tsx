@@ -18,6 +18,7 @@ export default async function Page() {
         cases={cases}
         title="High Court Cases"
         defaultCourt="HIGH_COURT"
+        lockCourt
         searchable
         listMode="active"
       />

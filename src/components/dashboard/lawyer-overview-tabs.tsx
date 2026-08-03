@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CaseTable } from "@/components/dashboard/case-table"
 import type { Case, CourtType } from "@prisma/client"
 import {
-  isRunningActiveCase,
+  isActiveStatus,
   isOverviewCompletedCase,
   isDeactiveStatus,
 } from "@/lib/cause-list-filters"
@@ -30,7 +30,7 @@ export function LawyerOverviewTabs({ cases }: { cases: Case[] }) {
   const [activeTab, setActiveTab] = useState<OverviewTab>("all")
 
   const activeCases = useMemo(
-    () => cases.filter((c) => isRunningActiveCase(c)),
+    () => cases.filter((c) => isActiveStatus(c.status)),
     [cases]
   )
   const completedCases = useMemo(
@@ -134,7 +134,9 @@ export function LawyerOverviewTabs({ cases }: { cases: Case[] }) {
         cases={filteredCases}
         title={title}
         defaultCourt={defaultCourt}
+        lockCourt={isCourtTab && activeTab !== "all"}
         showCourtColumn={activeTab === "all" || activeTab === "completed" || activeTab === "deactive"}
+        mobileFullColumns
         historyPhoneFilter
         searchable
         listMode={listMode}

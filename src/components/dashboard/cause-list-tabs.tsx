@@ -122,7 +122,7 @@ export function CauseListTabs({
         .filter((c): c is CaseWithHistory => !!c),
     }))
 
-    return buildCauseListReportPdf({
+    return await buildCauseListReportPdf({
       generatedAt: new Date(),
       groups,
     })
