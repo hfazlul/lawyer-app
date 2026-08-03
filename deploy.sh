@@ -10,15 +10,16 @@ echo "==> Pulling latest code..."
 git pull origin main
 
 echo "==> Installing dependencies..."
-npm ci
+# Next.js build needs autoprefixer/postcss/tailwind (devDependencies).
+# Do not let NODE_ENV=production skip them during install.
+npm ci --include=dev
 
 echo "==> Prisma generate + schema sync..."
 npx prisma generate
 npx prisma db push
 
 echo "==> Production build..."
-export NODE_ENV=production
-npm run build
+NODE_ENV=production npm run build
 
 echo "==> Restarting PM2..."
 pm2 restart "$PM2_NAME" --update-env
