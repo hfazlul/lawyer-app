@@ -114,6 +114,8 @@ export function CaseTable({
 }: CaseTableProps) {
   const router = useRouter()
   const hideOnMobile = (classes: string) => (mobileFullColumns ? "" : classes)
+  const textCell = (maxClass: string) =>
+    cn(maxClass, "break-words whitespace-normal [overflow-wrap:anywhere]")
   const csrfToken = useCsrf()
   const [isPending, startTransition] = useTransition()
   const [tableCases, setTableCases] = useState(cases)
@@ -339,18 +341,36 @@ export function CaseTable({
             <TableRow>
               {!compact && <TableHead className={cn("w-12", hideOnMobile("hidden sm:table-cell"))}>#</TableHead>}
               <TableHead>Client</TableHead>
-              <TableHead className={cn(mobileFullColumns ? "min-w-[7rem] max-w-[10rem]" : "min-w-[5.5rem] sm:min-w-0")}>
-                Case No
+              <TableHead className="min-w-[5.5rem] max-w-[10rem] sm:max-w-[12rem]">Case No</TableHead>
+              {showCourtColumn && (
+                <TableHead className={cn("min-w-[6rem] max-w-[9rem]", hideOnMobile("hidden md:table-cell"))}>
+                  Court
+                </TableHead>
+              )}
+              <TableHead className={cn("min-w-[6rem] max-w-[10rem]", hideOnMobile("hidden sm:table-cell"))}>
+                Court Type
               </TableHead>
-              {showCourtColumn && <TableHead className={hideOnMobile("hidden md:table-cell")}>Court</TableHead>}
-              <TableHead className={hideOnMobile("hidden sm:table-cell")}>Court Type</TableHead>
-              <TableHead className={hideOnMobile("hidden sm:table-cell")}>Type</TableHead>
-              {!compact && <TableHead className={hideOnMobile("hidden lg:table-cell")}>On Behalf</TableHead>}
-              <TableHead>Contact</TableHead>
-              {!compact && <TableHead className={hideOnMobile("hidden lg:table-cell")}>Email</TableHead>}
+              <TableHead className={cn("min-w-[5.5rem] max-w-[10rem]", hideOnMobile("hidden sm:table-cell"))}>
+                Type
+              </TableHead>
+              {!compact && (
+                <TableHead className={cn("min-w-[5rem]", hideOnMobile("hidden lg:table-cell"))}>
+                  On Behalf
+                </TableHead>
+              )}
+              <TableHead className="min-w-[7rem]">Contact</TableHead>
+              {!compact && (
+                <TableHead className={cn("min-w-[7rem] max-w-[10rem]", hideOnMobile("hidden lg:table-cell"))}>
+                  Email
+                </TableHead>
+              )}
               <TableHead className={hideOnMobile("hidden md:table-cell")}>Prev Date</TableHead>
               <TableHead>Next Date</TableHead>
-              {!compact && <TableHead className={hideOnMobile("hidden xl:table-cell")}>Steps</TableHead>}
+              {!compact && (
+                <TableHead className={cn("min-w-[8rem] max-w-[12rem]", hideOnMobile("hidden xl:table-cell"))}>
+                  Steps
+                </TableHead>
+              )}
               <TableHead>Status</TableHead>
               <TableHead className={hideOnMobile("hidden sm:table-cell")}>File</TableHead>
               <TableHead className="no-print text-center">History</TableHead>
@@ -375,31 +395,36 @@ export function CaseTable({
                       {page * pageSize + index + 1}
                     </TableCell>
                   )}
-                  <TableCell className={cn("font-medium", mobileFullColumns ? "max-w-[140px]" : "max-w-[120px] sm:max-w-none")}>
+                  <TableCell className={cn("font-medium", textCell("max-w-[140px] sm:max-w-[180px]"))}>
                     {c.clientName}
                   </TableCell>
-                  <TableCell
-                    className={cn(
-                      mobileFullColumns
-                        ? "max-w-[10rem] break-words whitespace-normal"
-                        : "max-w-[7rem] break-words whitespace-normal sm:max-w-none sm:whitespace-nowrap"
-                    )}
-                  >
+                  <TableCell className={textCell("max-w-[10rem] sm:max-w-[12rem]")}>
                     {c.caseNo}
                   </TableCell>
                   {showCourtColumn && (
-                    <TableCell className={hideOnMobile("hidden md:table-cell")}>{formatCourtName(c.court)}</TableCell>
+                    <TableCell className={cn(textCell("max-w-[9rem]"), hideOnMobile("hidden md:table-cell"))}>
+                      {formatCourtName(c.court)}
+                    </TableCell>
                   )}
-                  <TableCell className={hideOnMobile("hidden sm:table-cell")}>{c.courtType || "—"}</TableCell>
-                  <TableCell className={hideOnMobile("hidden sm:table-cell")}>{c.caseType}</TableCell>
-                  {!compact && (
-                    <TableCell className={hideOnMobile("hidden lg:table-cell")}>{formatOnBehalf(c.onBehalf)}</TableCell>
-                  )}
-                  <TableCell>
-                    <PhoneContact phone={c.contactNo} />
+                  <TableCell className={cn(textCell("max-w-[10rem]"), hideOnMobile("hidden sm:table-cell"))}>
+                    {c.courtType || "—"}
+                  </TableCell>
+                  <TableCell className={cn(textCell("max-w-[10rem]"), hideOnMobile("hidden sm:table-cell"))}>
+                    {c.caseType}
                   </TableCell>
                   {!compact && (
-                    <TableCell className={cn("max-w-[120px] truncate", hideOnMobile("hidden lg:table-cell"))}>
+                    <TableCell className={cn(textCell("max-w-[7rem]"), hideOnMobile("hidden lg:table-cell"))}>
+                      {formatOnBehalf(c.onBehalf)}
+                    </TableCell>
+                  )}
+                  <TableCell className="max-w-[9rem]">
+                    <PhoneContact phone={c.contactNo} className="min-w-0" />
+                  </TableCell>
+                  {!compact && (
+                    <TableCell
+                      className={cn(textCell("max-w-[10rem]"), hideOnMobile("hidden lg:table-cell"))}
+                      title={c.email || undefined}
+                    >
                       {c.email || "—"}
                     </TableCell>
                   )}
@@ -411,7 +436,7 @@ export function CaseTable({
                   </TableCell>
                   {!compact && (
                     <TableCell
-                      className={cn("max-w-[160px] truncate", hideOnMobile("hidden xl:table-cell"))}
+                      className={cn(textCell("max-w-[12rem]"), hideOnMobile("hidden xl:table-cell"))}
                       title={c.steps ? stripHtmlTags(c.steps) : undefined}
                     >
                       {c.steps ? stripHtmlTags(c.steps) : "—"}

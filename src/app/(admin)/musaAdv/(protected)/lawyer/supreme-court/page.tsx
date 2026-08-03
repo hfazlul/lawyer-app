@@ -19,6 +19,7 @@ export default async function Page() {
         title="Supreme Court Cases"
         defaultCourt="SUPREME_COURT"
         lockCourt
+        mobileFullColumns
         searchable
         listMode="active"
       />

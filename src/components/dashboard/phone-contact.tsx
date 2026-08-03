@@ -38,7 +38,7 @@ export function PhoneContact({
       <a
         href={`tel:${tel}`}
         className={cn(
-          "text-sm text-primary hover:underline whitespace-nowrap",
+          "min-w-0 text-sm text-primary hover:underline break-all whitespace-normal",
           mono && "font-mono"
         )}
       >
