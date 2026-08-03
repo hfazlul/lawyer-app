@@ -339,7 +339,9 @@ export function CaseTable({
             <TableRow>
               {!compact && <TableHead className={cn("w-12", hideOnMobile("hidden sm:table-cell"))}>#</TableHead>}
               <TableHead>Client</TableHead>
-              <TableHead>Case No</TableHead>
+              <TableHead className={cn(mobileFullColumns ? "min-w-[7rem] max-w-[10rem]" : "min-w-[5.5rem] sm:min-w-0")}>
+                Case No
+              </TableHead>
               {showCourtColumn && <TableHead className={hideOnMobile("hidden md:table-cell")}>Court</TableHead>}
               <TableHead className={hideOnMobile("hidden sm:table-cell")}>Court Type</TableHead>
               <TableHead className={hideOnMobile("hidden sm:table-cell")}>Type</TableHead>
@@ -376,7 +378,15 @@ export function CaseTable({
                   <TableCell className={cn("font-medium", mobileFullColumns ? "max-w-[140px]" : "max-w-[120px] sm:max-w-none")}>
                     {c.clientName}
                   </TableCell>
-                  <TableCell className="whitespace-nowrap">{c.caseNo}</TableCell>
+                  <TableCell
+                    className={cn(
+                      mobileFullColumns
+                        ? "max-w-[10rem] break-words whitespace-normal"
+                        : "max-w-[7rem] break-words whitespace-normal sm:max-w-none sm:whitespace-nowrap"
+                    )}
+                  >
+                    {c.caseNo}
+                  </TableCell>
                   {showCourtColumn && (
                     <TableCell className={hideOnMobile("hidden md:table-cell")}>{formatCourtName(c.court)}</TableCell>
                   )}
