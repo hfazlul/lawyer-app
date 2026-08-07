@@ -34,11 +34,11 @@ export function PhoneContact({
   }
 
   return (
-    <div className={cn("flex items-center gap-1", className)}>
+    <div className={cn("inline-flex max-w-full items-center gap-1", className)}>
       <a
         href={`tel:${tel}`}
         className={cn(
-          "min-w-0 text-sm text-primary hover:underline break-all whitespace-normal",
+          "shrink-0 whitespace-nowrap text-sm text-primary hover:underline",
           mono && "font-mono"
         )}
       >

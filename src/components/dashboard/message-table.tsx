@@ -263,7 +263,7 @@ export function MessageTable({ messages }: { messages: Message[] }) {
                         </Badge>
                       </TableCell>
                       <TableCell className="font-medium">{m.name}</TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">
                         <PhoneContact phone={m.phone} />
                       </TableCell>
                       <TableCell className="max-w-[200px] truncate" title={m.message ?? undefined}>
